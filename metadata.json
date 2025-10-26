@@ -1,0 +1,5 @@
+{
+  "name": "The Manipal Marketplace - Seller Dashboard",
+  "description": "A dashboard for sellers on The Manipal Marketplace to manage their products, view sales, and handle their accounts. Sellers can log in, add new products with images, and monitor their inventory and sales status.",
+  "requestFramePermissions": []
+}
