@@ -137,17 +137,17 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
         </div>
         <form onSubmit={handleSubmit} className="p-4 space-y-2 overflow-y-auto flex-grow">
           <div>
-            <label htmlFor="title" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Title</label>
+            <label htmlFor="title" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Title <span className="text-red-500">*</span></label>
             <input id="title" type="text" placeholder="ex: Apple Airpods Pro MagChase Charger" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" required />
           </div>
           
           <div>
-            <label htmlFor="description" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Description</label>
+            <label htmlFor="description" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Description <span className="text-red-500">*</span></label>
             <textarea id="description" placeholder="ex: Mint Condition, Small size, etc" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" rows={2} required></textarea>
           </div>
           
           <div className="relative" ref={categoryRef}>
-            <label htmlFor="categories-button" className="text-brand-dark/70 text-xs font-medium mb-1 block">Categories</label>
+            <label htmlFor="categories-button" className="text-brand-dark/70 text-xs font-medium mb-1 block">Categories (strongly recommended)</label>
             <button id="categories-button" type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-left flex justify-between items-center text-sm">
               <span className={`truncate ${categories.length > 0 ? 'text-brand-dark' : 'text-gray-400'}`}>
                 {categories.length > 0 ? categories.join(', ') : 'Select categories'}
@@ -166,26 +166,27 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             )}
           </div>
           
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
               <div className="col-span-1">
-                  <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Type</label>
+                  <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Type <span className="text-red-500">*</span></label>
                   <div className="flex bg-brand-cream border border-brand-dark/20 rounded-lg p-0.5">
                       <button type="button" onClick={() => setType('buy')} className={`w-1/2 py-1.5 rounded-md text-xs font-medium transition ${type === 'buy' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80'}`}>Buy</button>
                       <button type="button" onClick={() => setType('rent')} className={`w-1/2 py-1.5 rounded-md text-xs font-medium transition ${type === 'rent' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80'}`}>Rent</button>
                   </div>
               </div>
               <div className="col-span-1">
-                  <label htmlFor="quantity" className="text-brand-dark/70 text-xs font-medium mb-1 block">Quantity</label>
+                  <label htmlFor="quantity" className="text-brand-dark/70 text-xs font-medium mb-1 block">Quantity <span className="text-red-500">*</span></label>
                   <input id="quantity" type="number" placeholder="e.g. 5" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" min="1" required />
-              </div>
-              <div className="col-span-1">
-                 <label htmlFor="price" className="text-brand-dark/70 text-xs font-medium mb-1 block">Price (₹)</label>
-                 <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" step="10" min="0" required />
               </div>
           </div>
 
           <div>
-            <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Images (up to 4)</label>
+            <label htmlFor="price" className="text-brand-dark/70 text-xs font-medium mb-1 block">Price (₹) <span className="text-red-500">*</span></label>
+            <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" step="10" min="0" required />
+          </div>
+
+          <div>
+            <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Images (up to 4) <span className="text-red-500">*</span></label>
             <input type="file" onChange={handleImageChange} multiple accept="image/*" className="w-full text-xs text-brand-dark/70 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" required />
             {imagePreviews.length > 0 && (
                 <div className="mt-2 grid grid-cols-4 gap-2">
