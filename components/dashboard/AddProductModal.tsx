@@ -27,7 +27,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const filesArray = Array.from(e.target.files);
+      const filesArray = Array.from(e.target.files).slice(0, 4); // Limit to 4 images
       setImages(filesArray);
       
       const previews = filesArray.map(file => URL.createObjectURL(file as Blob));
@@ -129,75 +129,76 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
-      <div className="bg-brand-light border border-brand-dark/10 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] flex flex-col">
-        <div className="p-5 border-b border-brand-dark/10 flex justify-between items-center sticky top-0 bg-brand-light z-10">
-          <h2 className="text-2xl font-bold text-brand-dark">Add a New Product</h2>
-          <button onClick={handleClose} className="text-brand-dark/70 hover:text-brand-dark text-3xl">&times;</button>
+    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-2 sm:p-4">
+      <div className="bg-brand-light border border-brand-dark/10 rounded-2xl shadow-2xl w-full max-w-xl max-h-[95vh] flex flex-col">
+        <div className="p-4 border-b border-brand-dark/10 flex justify-between items-center sticky top-0 bg-brand-light z-10">
+          <h2 className="text-xl font-bold text-brand-dark">Add New Product</h2>
+          <button onClick={handleClose} className="text-brand-dark/70 hover:text-brand-dark text-3xl leading-none">&times;</button>
         </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-3 overflow-y-auto flex-grow">
+        <form onSubmit={handleSubmit} className="p-4 space-y-2 overflow-y-auto flex-grow">
           <div>
-            <label htmlFor="title" className="text-brand-dark/70 text-sm mb-1 block">Product Title</label>
-            <input id="title" type="text" placeholder="ex: Apple Airpods Pro MagChase Charger" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" required />
+            <label htmlFor="title" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Title</label>
+            <input id="title" type="text" placeholder="ex: Apple Airpods Pro MagChase Charger" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" required />
           </div>
           
           <div>
-            <label htmlFor="description" className="text-brand-dark/70 text-sm mb-1 block">Product Description</label>
-            <textarea id="description" placeholder="ex: Mint Condition, Small size, Dove white color, Original price was 5000, etc" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" rows={3} required></textarea>
+            <label htmlFor="description" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Description</label>
+            <textarea id="description" placeholder="ex: Mint Condition, Small size, etc" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" rows={2} required></textarea>
           </div>
           
           <div className="relative" ref={categoryRef}>
-            <label htmlFor="categories-button" className="text-brand-dark/70 text-sm mb-1 block">Categories (Strongly Recommended)</label>
-            <button id="categories-button" type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-left flex justify-between items-center">
+            <label htmlFor="categories-button" className="text-brand-dark/70 text-xs font-medium mb-1 block">Categories</label>
+            <button id="categories-button" type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-left flex justify-between items-center text-sm">
               <span className={`truncate ${categories.length > 0 ? 'text-brand-dark' : 'text-gray-400'}`}>
                 {categories.length > 0 ? categories.join(', ') : 'Select categories'}
               </span>
-              <svg className={`w-5 h-5 transition-transform flex-shrink-0 ${isCategoryOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              <svg className={`w-4 h-4 transition-transform flex-shrink-0 ${isCategoryOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             {isCategoryOpen && (
-              <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                 {availableCategories.map(cat => (
-                  <label key={cat} className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  <label key={cat} className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer">
                     <input type="checkbox" checked={categories.includes(cat)} onChange={() => handleCategoryChange(cat)} className="h-4 w-4 rounded border-gray-300 text-brand-accent focus:ring-brand-accent" />
-                    <span className="ml-3 text-brand-dark text-sm">{cat}</span>
+                    <span className="ml-2 text-brand-dark text-sm">{cat}</span>
                   </label>
                 ))}
               </div>
             )}
           </div>
           
-          <div className="flex flex-row gap-4">
-              <div className="flex-1">
-                  <label className="text-brand-dark/70 text-sm mb-1 block">Type</label>
-                  <div className="flex bg-brand-cream border border-brand-dark/20 rounded-lg p-1">
-                      <button type="button" onClick={() => setType('buy')} className={`w-1/2 py-2 rounded-md text-sm font-medium transition ${type === 'buy' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80'}`}>Buy</button>
-                      <button type="button" onClick={() => setType('rent')} className={`w-1/2 py-2 rounded-md text-sm font-medium transition ${type === 'rent' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80'}`}>Rent</button>
+          <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-1">
+                  <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Type</label>
+                  <div className="flex bg-brand-cream border border-brand-dark/20 rounded-lg p-0.5">
+                      <button type="button" onClick={() => setType('buy')} className={`w-1/2 py-1.5 rounded-md text-xs font-medium transition ${type === 'buy' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80'}`}>Buy</button>
+                      <button type="button" onClick={() => setType('rent')} className={`w-1/2 py-1.5 rounded-md text-xs font-medium transition ${type === 'rent' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80'}`}>Rent</button>
                   </div>
               </div>
-              <div className="flex-1">
-                  <label htmlFor="quantity" className="text-brand-dark/70 text-sm mb-1 block">Quantity</label>
-                  <input id="quantity" type="number" placeholder="e.g. 5" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" min="1" required />
+              <div className="col-span-1">
+                  <label htmlFor="quantity" className="text-brand-dark/70 text-xs font-medium mb-1 block">Quantity</label>
+                  <input id="quantity" type="number" placeholder="e.g. 5" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" min="1" required />
+              </div>
+              <div className="col-span-1">
+                 <label htmlFor="price" className="text-brand-dark/70 text-xs font-medium mb-1 block">Price (₹)</label>
+                 <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" step="10" min="0" required />
               </div>
           </div>
 
           <div>
-             <label htmlFor="price" className="text-brand-dark/70 text-sm mb-1 block">Price (₹)</label>
-             <input id="price" type="number" placeholder="Enter Price" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" step="10" min="0" required />
-          </div>
-
-          <div>
-            <label className="text-brand-dark/70 text-sm mb-1 block">Images</label>
-            <input type="file" onChange={handleImageChange} multiple accept="image/*" className="w-full text-sm text-brand-dark/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" required />
-            <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 gap-3">
-                {imagePreviews.map((src, index) => <img key={index} src={src} alt="Preview" className="w-full h-20 object-cover rounded-lg" />)}
-            </div>
+            <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Images (up to 4)</label>
+            <input type="file" onChange={handleImageChange} multiple accept="image/*" className="w-full text-xs text-brand-dark/70 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" required />
+            {imagePreviews.length > 0 && (
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                    {imagePreviews.map((src, index) => <img key={index} src={src} alt="Preview" className="w-full h-16 object-cover rounded-lg" />)}
+                </div>
+            )}
           </div>
           
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-xs text-center py-1">{error}</p>}
         </form>
-        <div className="p-4 border-t border-brand-dark/10 flex justify-end gap-4 sticky bottom-0 bg-brand-light">
-            <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition">Cancel</button>
-            <button type="submit" disabled={loading} onClick={handleSubmit} className="bg-brand-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[120px]">
+        <div className="p-3 border-t border-brand-dark/10 flex justify-end gap-3 sticky bottom-0 bg-brand-light">
+            <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-5 rounded-lg hover:bg-gray-300 transition text-sm">Cancel</button>
+            <button type="submit" disabled={loading} onClick={handleSubmit} className="bg-brand-accent text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[100px] text-sm">
               {loading ? <Spinner /> : 'Add Product'}
             </button>
         </div>
