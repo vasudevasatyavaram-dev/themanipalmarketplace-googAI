@@ -154,7 +154,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
           <h2 className="text-xl font-bold text-brand-dark">Add New Product</h2>
           <button onClick={handleClose} className="text-brand-dark/70 hover:text-brand-dark text-3xl leading-none">&times;</button>
         </div>
-        <form onSubmit={handleSubmit} className="p-4 space-y-2 overflow-y-auto flex-grow">
+        <form id="add-product-form" onSubmit={handleSubmit} className="p-4 space-y-2 overflow-y-auto flex-grow">
           <div>
             <label htmlFor="title" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Title <span className="text-red-500">*</span></label>
             <input id="title" type="text" placeholder="ex: Apple Airpods Pro MagChase Charger" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" required />
@@ -166,7 +166,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
           </div>
           
           <div className="relative" ref={categoryRef}>
-            <label htmlFor="categories-button" className="text-brand-dark/70 text-xs font-medium mb-1 block">Categories (strongly recommended)</label>
+            <label htmlFor="categories-button" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Categories (strongly recommended)</label>
             <button id="categories-button" type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-left flex justify-between items-center text-sm">
               <span className={`truncate ${categories.length > 0 ? 'text-brand-dark' : 'text-gray-400'}`}>
                 {categories.length > 0 ? categories.join(', ') : 'Select categories'}
@@ -218,7 +218,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
         </form>
         <div className="p-3 border-t border-brand-dark/10 flex justify-end gap-3 sticky bottom-0 bg-brand-light">
             <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-5 rounded-lg hover:bg-gray-300 transition text-sm">Cancel</button>
-            <button type="submit" disabled={loading} className="bg-brand-accent text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[100px] text-sm">
+            <button type="submit" form="add-product-form" disabled={loading} className="bg-brand-accent text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[100px] text-sm">
               {loading ? <Spinner /> : 'Add Product'}
             </button>
         </div>
