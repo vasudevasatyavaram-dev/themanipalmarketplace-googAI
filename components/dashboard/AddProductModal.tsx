@@ -61,13 +61,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
       const imageUrls: string[] = [];
       const uploadPromises = images.map(async (file) => {
         const fileName = `${userId}/${Date.now()}-${file.name}`;
-        const { data, error: uploadError } = await supabase!.storage
+        const { data, error: uploadError } = await supabase.storage
           .from('products')
           .upload(fileName, file);
           
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase!.storage
+        const { data: { publicUrl } } = supabase.storage
           .from('products')
           .getPublicUrl(data.path);
         
@@ -87,7 +87,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
         image_urls: imageUrls,
       };
 
-      const { error: insertError } = await supabase!.from('products').insert(productData);
+      const { error: insertError } = await supabase.from('products').insert(productData);
 
       if (insertError) throw insertError;
 

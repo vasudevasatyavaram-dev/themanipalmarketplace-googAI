@@ -35,7 +35,7 @@ const Login: React.FC = () => {
         setError(null);
         try {
             setOtpMethod(view as 'email' | 'phone');
-            const { error } = await supabase!.auth.signInWithOtp({
+            const { error } = await supabase.auth.signInWithOtp({
                 email: view === 'email' ? email : undefined,
                 phone: view === 'phone' ? `+91${phone}` : undefined,
             });
@@ -59,7 +59,7 @@ const Login: React.FC = () => {
                 ? { email, token: otp, type: 'email' as const } 
                 : { phone: `+91${phone}`, token: otp, type: 'sms' as const };
             
-            const { error } = await supabase!.auth.verifyOtp(params);
+            const { error } = await supabase.auth.verifyOtp(params);
             
             if (error) throw error;
             // The onAuthStateChange listener in App.tsx will handle the session update
@@ -73,7 +73,7 @@ const Login: React.FC = () => {
     const signInWithGoogle = async () => {
         setLoading(true);
         setError(null);
-        await supabase!.auth.signInWithOAuth({ provider: 'google' });
+        await supabase.auth.signInWithOAuth({ provider: 'google' });
         setLoading(false);
     }
 
