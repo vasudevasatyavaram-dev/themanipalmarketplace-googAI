@@ -17,8 +17,8 @@ export interface Database {
           created_at: string
           description: string
           id: string
-          image_urls: string[]
-          original_image_urls: string[] | null
+          image_url: string[]
+          images: Json[]
           price: number
           product_status: string
           quantity_left: number
@@ -33,8 +33,8 @@ export interface Database {
           created_at?: string
           description: string
           id?: string
-          image_urls: string[]
-          original_image_urls?: string[] | null
+          image_url: string[]
+          images?: Json[]
           price: number
           product_status?: string
           quantity_left: number
@@ -49,8 +49,8 @@ export interface Database {
           created_at?: string
           description?: string
           id?: string
-          image_urls?: string[]
-          original_image_urls?: string[] | null
+          image_url?: string[]
+          images?: Json[]
           price?: number
           product_status?: string
           quantity_left?: number

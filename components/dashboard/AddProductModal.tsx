@@ -24,15 +24,45 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const categoryRef = useRef<HTMLDivElement>(null);
 
   const availableCategories = ["Books", "Tech and Gadgets", "Cycles, Bikes, etc", "Brand New", "Home & Kitchen Essentials", "Rent", "Other"];
+  
+  const MAX_FILE_SIZE = 12 * 1024 * 1024; // 12 MB
+  const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml', 'image/tiff'];
+
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const filesArray = Array.from(e.target.files).slice(0, 4); // Limit to 4 images
-      setImages(filesArray);
-      
-      const previews = filesArray.map(file => URL.createObjectURL(file as Blob));
-      setImagePreviews(previews);
+    setError(null);
+    if (!e.target.files) return;
+
+    const files = Array.from(e.target.files);
+
+    if (files.length > 5) {
+      setError('You can upload a maximum of 5 images.');
+      return;
     }
+
+    const validFiles: File[] = [];
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        setError(`File "${file.name}" exceeds the 12 MB size limit.`);
+        setImages([]);
+        setImagePreviews([]);
+        return;
+      }
+      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+        setError(`File type for "${file.name}" is not supported.`);
+        setImages([]);
+        setImagePreviews([]);
+        return;
+      }
+      validFiles.push(file);
+    }
+    
+    setImages(validFiles);
+    
+    // Cleanup previous object URLs to prevent memory leaks
+    imagePreviews.forEach(url => URL.revokeObjectURL(url));
+    const previews = validFiles.map(file => URL.createObjectURL(file));
+    setImagePreviews(previews);
   };
 
   const resetForm = useCallback(() => {
@@ -44,9 +74,10 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     setQuantity(1);
     setPrice('');
     setImages([]);
+    imagePreviews.forEach(url => URL.revokeObjectURL(url));
     setImagePreviews([]);
     setError(null);
-  }, []);
+  }, [imagePreviews]);
 
   const handleClose = () => {
     resetForm();
@@ -102,23 +133,30 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     setLoading(true);
 
     try {
-      const imageUrls: string[] = [];
-      const uploadPromises = images.map(async (file) => {
-        const fileName = `${userId}/${Date.now()}-${file.name}`;
+      const uploadedImageUrls: string[] = [];
+      
+      // Sanitize the product title to create a valid folder name
+      const sanitizedTitle = title.trim().replace(/\s+/g, '_').replace(/[^\w-]/g, '');
+
+      const uploadPromises = images.map(async (file, index) => {
+        // Construct the new file path: userId/sanitized_product_title/timestamp_image_index.extension
+        const fileExtension = file.name.split('.').pop() || 'jpg';
+        const fileName = `${userId}/${sanitizedTitle}/${Date.now()}_image_${index}.${fileExtension}`;
+
         const { data, error: uploadError } = await supabase.storage
-          .from('products')
+          .from('product_images')
           .upload(fileName, file);
           
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
-          .from('products')
+          .from('product_images')
           .getPublicUrl(data.path);
         
         return publicUrl;
       });
       
-      imageUrls.push(...await Promise.all(uploadPromises));
+      uploadedImageUrls.push(...await Promise.all(uploadPromises));
 
       const productData = {
         user_id: userId,
@@ -128,7 +166,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
         type,
         quantity_left: quantity,
         price: parseInt(price, 10),
-        image_urls: imageUrls,
+        image_url: uploadedImageUrls,
       };
 
       const { error: insertError } = await supabase.from('products').insert(productData);
@@ -205,10 +243,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
           </div>
 
           <div>
-            <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Images (up to 4) <span className="text-red-500">*</span></label>
-            <input type="file" onChange={handleImageChange} multiple accept="image/*" className="w-full text-xs text-brand-dark/70 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" required />
+            <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Images (1 to 5) <span className="text-red-500">*</span></label>
+            <input type="file" onChange={handleImageChange} multiple accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,image/tiff" className="w-full text-xs text-brand-dark/70 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" required />
+            <p className="text-xs text-brand-dark/60 mt-1">Max 12 MB per image. Allowed types: JPG, PNG, GIF, WEBP, etc.</p>
             {imagePreviews.length > 0 && (
-                <div className="mt-2 grid grid-cols-4 gap-2">
+                <div className="mt-2 grid grid-cols-5 gap-2">
                     {imagePreviews.map((src, index) => <img key={index} src={src} alt="Preview" className="w-full h-16 object-cover rounded-lg" />)}
                 </div>
             )}

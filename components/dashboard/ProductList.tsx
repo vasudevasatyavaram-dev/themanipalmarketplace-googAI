@@ -21,7 +21,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   
   return (
     <div className="bg-brand-cream rounded-xl overflow-hidden shadow-lg transition-transform hover:scale-105 duration-300 ease-in-out border border-brand-dark/5">
-      <img src={product.image_urls[0]} alt={product.title} className="w-full h-48 object-cover" />
+      {product.image_url?.[0] ? (
+        <img src={product.image_url[0]} alt={product.title} className="w-full h-48 object-cover" />
+      ) : (
+        <div className="w-full h-48 bg-brand-light flex items-center justify-center">
+          <span className="text-brand-dark/50">No Image</span>
+        </div>
+      )}
       <div className="p-4">
         <div className="flex justify-between items-start">
             <h3 className="font-bold text-lg text-brand-dark mb-2 truncate">{product.title}</h3>
