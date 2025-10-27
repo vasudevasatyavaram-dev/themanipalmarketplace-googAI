@@ -22,47 +22,92 @@ const StoreIcon = () => (
 
 const Login: React.FC = () => {
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const [authView, setAuthView] = useState<'login' | 'signup'>('login');
+    const [pageView, setPageView] = useState<'form' | 'otp'>('form');
+    const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('phone');
+
+    const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
-    const [view, setView] = useState<'email' | 'phone' | 'otp'>('email');
-    const [otpMethod, setOtpMethod] = useState<'email' | 'phone'>('email');
-    const [error, setError] = useState<string | null>(null);
+    
+    const resetForm = () => {
+        setError(null);
+        setPhone('');
+        setEmail('');
+        setOtp('');
+        setFullName('');
+        setPageView('form');
+        setLoginMethod('phone');
+    }
 
-    const handleLogin = async (e: FormEvent) => {
+    const handleAuthAction = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        try {
-            setOtpMethod(view as 'email' | 'phone');
-            const { error } = await supabase.auth.signInWithOtp({
-                email: view === 'email' ? email : undefined,
-                phone: view === 'phone' ? `+91${phone}` : undefined,
-            });
 
-            if (error) throw error;
-            setView('otp');
+        try {
+            if (authView === 'login') {
+                const { error } = await supabase.auth.signInWithOtp({
+                    email: loginMethod === 'email' ? email : undefined,
+                    phone: loginMethod === 'phone' ? `+91${phone}` : undefined,
+                });
+                if (error) throw error;
+            } else { // signup
+                if (!fullName.trim() || !phone.trim()) {
+                    setError('Full Name and Phone Number are required.');
+                    setLoading(false);
+                    return;
+                }
+                const { error } = await supabase.auth.signInWithOtp({
+                    phone: `+91${phone}`,
+                    options: {
+                        data: {
+                            full_name: fullName,
+                            ...(email && { email_optional: email }),
+                        },
+                    },
+                });
+                if (error) throw error;
+            }
+            setPageView('otp');
         } catch (error: any) {
             setError(error.error_description || error.message);
         } finally {
-            setLoading(false);
+            if (error === null) { // only set loading to false if we didn't hit the validation error
+                 setLoading(false);
+            }
         }
     };
-
+    
     const handleVerifyOtp = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
         try {
-             const params = otpMethod === 'email' 
-                ? { email, token: otp, type: 'email' as const } 
-                : { phone: `+91${phone}`, token: otp, type: 'sms' as const };
-            
-            const { error } = await supabase.auth.verifyOtp(params);
-            
-            if (error) throw error;
-            // The onAuthStateChange listener in App.tsx will handle the session update
+            const isLoginWithEmail = authView === 'login' && loginMethod === 'email';
+
+            // Fix: Split supabase.auth.verifyOtp call to ensure correct type inference for email/phone params.
+            if (isLoginWithEmail) {
+                const { error } = await supabase.auth.verifyOtp({
+                    email,
+                    token: otp,
+                    type: 'email'
+                });
+                if (error) throw error;
+            } else {
+                // This covers login with phone AND signup (which is always phone)
+                const { error } = await supabase.auth.verifyOtp({
+                    phone: `+91${phone}`,
+                    token: otp,
+                    type: 'sms'
+                });
+                if (error) throw error;
+            }
+
         } catch (error: any) {
             setError(error.error_description || error.message);
         } finally {
@@ -73,67 +118,71 @@ const Login: React.FC = () => {
     const signInWithGoogle = async () => {
         setLoading(true);
         setError(null);
-        await supabase.auth.signInWithOAuth({ provider: 'google' });
-        setLoading(false);
-    }
+        const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+        if (error) {
+            setError(error.message);
+            setLoading(false);
+        }
+    };
 
-    const renderForm = () => {
-        if (view === 'otp') {
+    const renderFormContent = () => {
+        if (pageView === 'otp') {
             return (
                 <form onSubmit={handleVerifyOtp} className="space-y-6">
                     <div>
                         <label htmlFor="otp" className="block text-sm font-medium text-brand-dark/80">Enter OTP</label>
-                        <input
-                            id="otp"
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent"
-                            type="text"
-                            placeholder="123456"
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                            required
-                        />
+                        <input id="otp" type="text" placeholder="123456" value={otp} onChange={(e) => setOtp(e.target.value)} required
+                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
                     </div>
                     <div>
                         <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
-                            {loading ? <Spinner /> : 'Verify OTP'}
+                            {loading ? <Spinner /> : 'Verify & Continue'}
+                        </button>
+                    </div>
+                     <div className="text-center">
+                        <button type="button" onClick={() => setPageView('form')} className="font-medium text-sm text-brand-accent hover:text-brand-accent/80">
+                           Back to {authView === 'login' ? 'Login' : 'Sign Up'}
                         </button>
                     </div>
                 </form>
             );
         }
+
         return (
-            <form onSubmit={handleLogin} className="space-y-6">
-                {view === 'email' ? (
-                     <div>
+            <form onSubmit={handleAuthAction} className="space-y-6">
+                {authView === 'signup' && (
+                    <div>
+                        <label htmlFor="fullName" className="block text-sm font-medium text-brand-dark/80">Full Name</label>
+                        <input id="fullName" type="text" placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required
+                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
+                    </div>
+                )}
+
+                { (authView === 'login' && loginMethod === 'email') ? (
+                    <div>
                         <label htmlFor="email" className="block text-sm font-medium text-brand-dark/80">Email address</label>
-                        <input
-                            id="email"
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent"
-                            type="email"
-                            placeholder="you@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+                        <input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required
+                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
                     </div>
                 ) : (
                      <div>
                         <label htmlFor="phone" className="block text-sm font-medium text-brand-dark/80">Phone number</label>
-                         <div className="flex">
+                         <div className="mt-1 flex rounded-md shadow-sm">
                              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+91</span>
-                             <input
-                                id="phone"
-                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent"
-                                type="tel"
-                                placeholder="9876543210"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                required
-                                pattern="[0-9]{10}"
-                            />
+                             <input id="phone" type="tel" placeholder="9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} required pattern="[0-9]{10}"
+                                className="block w-full flex-1 rounded-none rounded-r-md px-4 py-3 border border-gray-300 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
                          </div>
                     </div>
                 )}
+
+                {authView === 'signup' && (
+                    <div>
+                        <label htmlFor="emailOptional" className="block text-sm font-medium text-brand-dark/80">Email address (optional)</label>
+                        <input id="emailOptional" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)}
+                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
+                    </div>
+                )}
+
                 <div>
                     <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
                         {loading ? <Spinner /> : 'Send OTP'}
@@ -149,7 +198,7 @@ const Login: React.FC = () => {
                 <div className="inline-block">
                     <StoreIcon />
                 </div>
-                <h1 className="mt-4 text-3xl font-bold text-brand-dark tracking-wider">
+                <h1 className="mt-4 text-2xl sm:text-3xl font-bold text-brand-dark tracking-wider">
                     • the manipal marketplace •
                 </h1>
                 <p className="mt-1 text-md text-brand-dark/70">
@@ -166,12 +215,19 @@ const Login: React.FC = () => {
                     </p>
                 </div>
                 
-                {renderForm()}
+                <div className="flex bg-brand-light p-1 rounded-lg border border-gray-300/80">
+                    <button onClick={() => { setAuthView('login'); resetForm(); }} className={`w-1/2 p-2 rounded-md font-semibold transition-colors duration-300 ${authView === 'login' ? 'bg-white shadow' : 'text-brand-dark/60'}`}>Login</button>
+                    <button onClick={() => { setAuthView('signup'); resetForm(); }} className={`w-1/2 p-2 rounded-md font-semibold transition-colors duration-300 ${authView === 'signup' ? 'bg-white shadow' : 'text-brand-dark/60'}`}>Sign Up</button>
+                </div>
+
+                <div className="pt-2">
+                    {renderFormContent()}
+                </div>
                 
-                {view !== 'otp' && (
-                     <div className="text-center pt-4">
-                        <button onClick={() => setView(view === 'email' ? 'phone' : 'email')} className="font-medium text-sm text-brand-accent hover:text-brand-accent/80">
-                           {view === 'email' ? 'Use phone instead' : 'Use email instead'}
+                {authView === 'login' && pageView === 'form' && (
+                     <div className="text-center">
+                        <button onClick={() => setLoginMethod(prev => prev === 'email' ? 'phone' : 'email')} className="font-medium text-sm text-brand-accent hover:text-brand-accent/80">
+                           {loginMethod === 'email' ? 'Use phone instead' : 'Use email instead'}
                         </button>
                     </div>
                 )}
@@ -188,7 +244,7 @@ const Login: React.FC = () => {
                 </div>
 
                 <div>
-                    <button onClick={signInWithGoogle} disabled={loading && view !== 'otp'} className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    <button onClick={signInWithGoogle} disabled={loading} className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
                         <GoogleIcon />
                         Sign in with Google
                     </button>
