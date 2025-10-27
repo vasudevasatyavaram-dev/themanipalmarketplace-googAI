@@ -5,7 +5,11 @@ interface ProductListProps {
   products: Product[];
 }
 
-const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
+interface ProductCardProps {
+  product: Product;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const getStatusChipClass = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-500/20 text-yellow-400';

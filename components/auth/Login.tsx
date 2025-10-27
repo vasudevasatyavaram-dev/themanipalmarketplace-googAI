@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, FormEvent } from 'react';
 import { supabase } from '../../services/supabase';
 import Spinner from '../ui/Spinner';
 
@@ -14,227 +14,176 @@ const GoogleIcon = () => (
 const StoreIcon = () => (
     <div className="w-20 h-20 bg-brand-accent rounded-full flex items-center justify-center mb-6">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FAF9E1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 9.5L12 4l9 5.5"/><path d="M19 13.5V21a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7.5"/><path d="M10 17h4v4h-4z"/><path d="M8 22V12.5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1V22"/>
+            <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" />
+            <path d="M9 22V12H15V22" />
         </svg>
     </div>
 );
 
-
 const Login: React.FC = () => {
     const [loading, setLoading] = useState(false);
-    const [isLoginView, setIsLoginView] = useState(true);
-    const [contact, setContact] = useState(''); // Can be email or phone
-    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
-    const [view, setView] = useState<'credentials' | 'otp'>('credentials');
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
-    const [resendCooldown, setResendCooldown] = useState(0);
+    const [view, setView] = useState<'email' | 'phone' | 'otp'>('email');
+    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        // Fix: Use ReturnType<typeof setTimeout> for browser compatibility instead of NodeJS.Timeout.
-        let timer: ReturnType<typeof setTimeout>;
-        if (resendCooldown > 0) {
-            timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
-        }
-        return () => clearTimeout(timer);
-    }, [resendCooldown]);
-
-
-    const handleGoogleLogin = async () => {
-        setLoading(true);
-        setError('');
-        setMessage('');
-        const { error } = await supabase!.auth.signInWithOAuth({ provider: 'google' });
-        if (error) {
-            setError(error.message);
-        }
-        setLoading(false);
-    };
-    
-    const isEmail = (input: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
-
-    const handleSendOtp = async (e?: React.FormEvent) => {
-        e?.preventDefault();
-        setLoading(true);
-        setError('');
-        setMessage('');
-
-        if (!isLoginView && !fullName) {
-            setError('Please enter your full name.');
-            setLoading(false);
-            return;
-        }
-
-        const options = {
-            data: isLoginView ? undefined : { full_name: fullName },
-            shouldCreateUser: !isLoginView,
-        };
-
-        const contactInfo = isEmail(contact) ? { email: contact } : { phone: contact };
-
-        const { error } = await supabase!.auth.signInWithOtp({
-            ...contactInfo,
-            options,
-        });
-
-        if (error) {
-            setError(error.message);
-        } else {
-            setMessage(`An OTP has been sent to ${contact}.`);
-            setView('otp');
-            setResendCooldown(60);
-        }
-        setLoading(false);
-    }
-    
-    const handleVerifyOtp = async (e: React.FormEvent) => {
+    const handleLogin = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
-        
-        const type = isEmail(contact) ? 'email' : 'sms';
-        
-        const { error } = await supabase!.auth.verifyOtp({
-            ...(type === 'email' ? { email: contact } : { phone: contact }),
-            token: otp,
-            type: type
-        });
-        
-        if (error) {
-            setError(error.message);
+        setError(null);
+        try {
+            const { error } = await supabase.auth.signInWithOtp({
+                email: view === 'email' ? email : undefined,
+                phone: view === 'phone' ? `+91${phone}` : undefined,
+            });
+
+            if (error) throw error;
+            setView('otp');
+        } catch (error: any) {
+            setError(error.error_description || error.message);
+        } finally {
+            setLoading(false);
         }
-        // onAuthStateChange in App.tsx will handle successful login
+    };
+
+    const handleVerifyOtp = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        try {
+             const params = email 
+                ? { email, token: otp, type: 'email' as const } 
+                : { phone: `+91${phone}`, token: otp, type: 'sms' as const };
+            
+            const { error } = await supabase.auth.verifyOtp(params);
+            
+            if (error) throw error;
+            // The onAuthStateChange listener in App.tsx will handle the session update
+        } catch (error: any) {
+            setError(error.error_description || error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    const signInWithGoogle = async () => {
+        setLoading(true);
+        setError(null);
+        await supabase.auth.signInWithOAuth({ provider: 'google' });
         setLoading(false);
     }
 
-    const switchView = (isLogin: boolean) => {
-        setIsLoginView(isLogin);
-        setError('');
-        setMessage('');
-        setContact('');
-        setFullName('');
-        setOtp('');
-        setView('credentials');
-    }
-
-    return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-4 font-sans">
-            <header className="text-center mb-8 flex flex-col items-center">
-                <StoreIcon />
-                <h1 className="text-3xl font-bold tracking-wider text-brand-dark">
-                    • the manipal marketplace •
-                </h1>
-                <p className="text-brand-dark/70 mt-1">Seller Dashboard - Manage your products</p>
-            </header>
-
-            <main className="w-full max-w-sm bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-                <div className="text-left mb-6">
-                    <h2 className="text-2xl font-bold text-brand-dark">Welcome</h2>
-                    <p className="text-gray-500 mt-1">Login or create an account to get started</p>
-                </div>
-
-                <div className="bg-brand-light p-1 rounded-lg flex mb-6">
-                    <button
-                        onClick={() => switchView(true)}
-                        className={`w-1/2 py-2 text-sm font-semibold rounded-md transition-colors duration-300 ${isLoginView ? 'bg-white shadow' : 'text-brand-dark/60'}`}
-                    >
-                        Login
-                    </button>
-                    <button
-                        onClick={() => switchView(false)}
-                        className={`w-1/2 py-2 text-sm font-semibold rounded-md transition-colors duration-300 ${!isLoginView ? 'bg-white shadow' : 'text-brand-dark/60'}`}
-                    >
-                        Sign Up
-                    </button>
-                </div>
-                
-                {view === 'credentials' ? (
-                    <form onSubmit={handleSendOtp} className="space-y-4">
-                        {!isLoginView && (
-                             <div>
-                                <label className="text-sm font-medium text-gray-700 sr-only">Full Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="Full Name"
-                                    value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
-                                    className="w-full bg-brand-light border border-gray-300/50 text-brand-dark p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-                                    required
-                                />
-                            </div>
-                        )}
-                        <div>
-                            <label className="text-sm font-medium text-gray-700 sr-only">Email or Phone</label>
-                            <input
-                                type="text"
-                                placeholder="Email or Phone Number"
-                                value={contact}
-                                onChange={(e) => setContact(e.target.value)}
-                                className="w-full bg-brand-light border border-gray-300/50 text-brand-dark p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-                                required
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-brand-accent text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 disabled:opacity-50 flex justify-center items-center"
-                        >
-                            {loading ? <Spinner /> : 'Send OTP'}
-                        </button>
-                    </form>
-                ) : (
-                    <form onSubmit={handleVerifyOtp} className="space-y-4">
-                         <div>
-                            <label className="text-sm font-medium text-gray-700 sr-only">OTP</label>
-                            <input
-                                type="text"
-                                placeholder="Enter OTP"
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value)}
-                                className="w-full bg-brand-light border border-gray-300/50 text-brand-dark p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-brand-accent text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 disabled:opacity-50 flex justify-center items-center"
-                        >
+    const renderForm = () => {
+        if (view === 'otp') {
+            return (
+                <form onSubmit={handleVerifyOtp} className="space-y-6">
+                    <div>
+                        <label htmlFor="otp" className="block text-sm font-medium text-brand-dark/80">Enter OTP</label>
+                        <input
+                            id="otp"
+                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent"
+                            type="text"
+                            placeholder="123456"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
                             {loading ? <Spinner /> : 'Verify OTP'}
                         </button>
-                         <button
-                            type="button"
-                            onClick={() => handleSendOtp()}
-                            disabled={loading || resendCooldown > 0}
-                            className="w-full text-sm text-center text-brand-accent hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : 'Resend OTP'}
+                    </div>
+                </form>
+            );
+        }
+        return (
+            <form onSubmit={handleLogin} className="space-y-6">
+                {view === 'email' ? (
+                     <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-brand-dark/80">Email address</label>
+                        <input
+                            id="email"
+                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent"
+                            type="email"
+                            placeholder="you@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                ) : (
+                     <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-brand-dark/80">Phone number</label>
+                         <div className="flex">
+                             <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+91</span>
+                             <input
+                                id="phone"
+                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent"
+                                type="tel"
+                                placeholder="9876543210"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                required
+                                pattern="[0-9]{10}"
+                            />
+                         </div>
+                    </div>
+                )}
+                <div>
+                    <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
+                        {loading ? <Spinner /> : 'Send OTP'}
+                    </button>
+                </div>
+            </form>
+        );
+    }
+    
+    return (
+        <div className="min-h-screen flex flex-col justify-center items-center bg-brand-light p-4">
+            <div className="max-w-md w-full bg-brand-cream shadow-2xl rounded-2xl p-8 space-y-8">
+                <div className="text-center">
+                    <StoreIcon />
+                    <h2 className="mt-6 text-3xl font-extrabold text-brand-dark">
+                        Seller Dashboard
+                    </h2>
+                    <p className="mt-2 text-brand-dark/70">
+                        Sign in to manage your products
+                    </p>
+                </div>
+                
+                {renderForm()}
+                
+                {view !== 'otp' && (
+                     <div className="text-center">
+                        <button onClick={() => setView(view === 'email' ? 'phone' : 'email')} className="font-medium text-sm text-brand-accent hover:text-brand-accent/80">
+                           {view === 'email' ? 'Use phone instead' : 'Use email instead'}
                         </button>
-                    </form>
+                    </div>
                 )}
 
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-                <div className="relative flex py-5 items-center">
-                    <div className="flex-grow border-t border-gray-200"></div>
-                    <span className="flex-shrink mx-4 text-xs text-gray-400 font-semibold">OR CONTINUE WITH</span>
-                    <div className="flex-grow border-t border-gray-200"></div>
+                <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-brand-cream text-gray-500">Or continue with</span>
+                    </div>
                 </div>
 
-                <button
-                    onClick={handleGoogleLogin}
-                    disabled={loading}
-                    className="w-full flex items-center justify-center bg-white text-brand-dark font-semibold py-3 px-4 rounded-lg shadow-sm border border-gray-300 hover:bg-gray-50 transition duration-300 disabled:opacity-50"
-                >
-                    {loading ? <Spinner /> : <><GoogleIcon /> Sign in with Google</>}
-                </button>
-                
-                {error && <p className="mt-4 text-center text-sm text-red-500">{error}</p>}
-                {message && !error && <p className="mt-4 text-center text-sm text-green-600">{message}</p>}
-            </main>
+                <div>
+                    <button onClick={signInWithGoogle} disabled={loading && view !== 'otp'} className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        <GoogleIcon />
+                        Sign in with Google
+                    </button>
+                </div>
+            </div>
         </div>
     );
-};
+}
 
 export default Login;

@@ -1,18 +1,7 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../types';
 
-const supabaseUrl = "https://kdheuhzuudfejkzexkgs.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkaGV1aHp1dWRmZWpremV4a2dzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyODY5MjAsImV4cCI6MjA3Njg2MjkyMH0.yqjX2rO-PzKpj1MPsZPEasKbgvAijQ7VPgjD5trssuI";
+const supabaseUrl = 'https://ynxkqcerupuzybmgdlvl.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlueGtxY2VydXB1enlibWdkbHZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MTU3OTgsImV4cCI6MjA3Njk5MTc5OH0.QlbqaVIBNxCB30ESnZQXBqrYQkLEwEFSovC0pnWP62U';
 
-let client: SupabaseClient<Database> | null = null;
-let error: string | null = null;
-
-try {
-  client = createClient<Database>(supabaseUrl, supabaseAnonKey);
-} catch (e: any) {
-  error = `Failed to initialize Supabase client: ${e.message}`;
-  console.error(error);
-}
-
-export const supabase = client;
-export const supabaseError = error;
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
