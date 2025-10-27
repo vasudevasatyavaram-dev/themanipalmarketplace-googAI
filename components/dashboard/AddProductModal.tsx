@@ -130,12 +130,12 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
-      <div className="bg-brand-light border border-brand-dark/10 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-brand-dark/10 flex justify-between items-center sticky top-0 bg-brand-light z-10">
+      <div className="bg-brand-light border border-brand-dark/10 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] flex flex-col">
+        <div className="p-5 border-b border-brand-dark/10 flex justify-between items-center sticky top-0 bg-brand-light z-10">
           <h2 className="text-2xl font-bold text-brand-dark">Add a New Product</h2>
           <button onClick={handleClose} className="text-brand-dark/70 hover:text-brand-dark text-3xl">&times;</button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-3 overflow-y-auto flex-grow">
           <div>
             <label htmlFor="title" className="text-brand-dark/70 text-sm mb-1 block">Product Title</label>
             <input id="title" type="text" placeholder="ex: Apple Airpods Pro MagChase Charger" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" required />
@@ -143,7 +143,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
           
           <div>
             <label htmlFor="description" className="text-brand-dark/70 text-sm mb-1 block">Product Description</label>
-            <textarea id="description" placeholder="ex: Mint Condition, Small size, Dove white color, Original price was 5000, etc" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" rows={4} required></textarea>
+            <textarea id="description" placeholder="ex: Mint Condition, Small size, Dove white color, Original price was 5000, etc" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" rows={3} required></textarea>
           </div>
           
           <div className="relative" ref={categoryRef}>
@@ -166,7 +166,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             )}
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-row gap-4">
               <div className="flex-1">
                   <label className="text-brand-dark/70 text-sm mb-1 block">Type</label>
                   <div className="flex bg-brand-cream border border-brand-dark/20 rounded-lg p-1">
@@ -188,20 +188,19 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
           <div>
             <label className="text-brand-dark/70 text-sm mb-1 block">Images</label>
             <input type="file" onChange={handleImageChange} multiple accept="image/*" className="w-full text-sm text-brand-dark/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" required />
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {imagePreviews.map((src, index) => <img key={index} src={src} alt="Preview" className="w-full h-24 object-cover rounded-lg" />)}
+            <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {imagePreviews.map((src, index) => <img key={index} src={src} alt="Preview" className="w-full h-20 object-cover rounded-lg" />)}
             </div>
           </div>
           
           {error && <p className="text-red-500 text-sm">{error}</p>}
-
-          <div className="pt-4 flex justify-end gap-4 sticky bottom-0 bg-brand-light pb-6 px-6 -mx-6">
+        </form>
+        <div className="p-4 border-t border-brand-dark/10 flex justify-end gap-4 sticky bottom-0 bg-brand-light">
             <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-lg hover:bg-gray-300 transition">Cancel</button>
-            <button type="submit" disabled={loading} className="bg-brand-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[120px]">
+            <button type="submit" disabled={loading} onClick={handleSubmit} className="bg-brand-accent text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[120px]">
               {loading ? <Spinner /> : 'Add Product'}
             </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
