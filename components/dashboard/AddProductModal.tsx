@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import Spinner from '../ui/Spinner';
 
@@ -12,7 +12,8 @@ interface AddProductModalProps {
 const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onProductAdded, userId }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [type, setType] = useState<'buy' | 'rent'>('buy');
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState('');
@@ -20,6 +21,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+
+  const availableCategories = ["Books", "Tech and Gadgets", "Cycles, Bikes, etc", "Brand New", "Home & Kitchen Essentials", "Rent", "Other"];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -34,7 +38,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const resetForm = useCallback(() => {
     setTitle('');
     setDescription('');
-    setCategory('');
+    setCategories([]);
+    setIsCategoryOpen(false);
     setType('buy');
     setQuantity(1);
     setPrice('');
@@ -47,6 +52,26 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     resetForm();
     onClose();
   };
+
+  const handleCategoryChange = (selectedCategory: string) => {
+    setCategories(prev => 
+      prev.includes(selectedCategory)
+        ? prev.filter(c => c !== selectedCategory)
+        : [...prev, selectedCategory]
+    );
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+        setIsCategoryOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [categoryRef]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,10 +105,10 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
         user_id: userId,
         title,
         description,
-        category: category.split(',').map(c => c.trim()).filter(Boolean),
+        category: categories,
         type,
         quantity_left: quantity,
-        price: parseFloat(price),
+        price: parseInt(price, 10),
         image_urls: imageUrls,
       };
 
@@ -111,9 +136,35 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
           <button onClick={handleClose} className="text-brand-dark/70 hover:text-brand-dark text-3xl">&times;</button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <input type="text" placeholder="Product Title" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" required />
-          <textarea placeholder="Product Description" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" rows={4} required></textarea>
-          <input type="text" placeholder="Categories (comma-separated)" value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" />
+          <div>
+            <label htmlFor="title" className="text-brand-dark/70 text-sm mb-1 block">Product Title</label>
+            <input id="title" type="text" placeholder="ex: Apple Airpods Pro MagChase Charger" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" required />
+          </div>
+          
+          <div>
+            <label htmlFor="description" className="text-brand-dark/70 text-sm mb-1 block">Product Description</label>
+            <textarea id="description" placeholder="ex: Mint Condition, Small size, Dove white color, Original price was 5000, etc" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" rows={4} required></textarea>
+          </div>
+          
+          <div className="relative" ref={categoryRef}>
+            <label htmlFor="categories-button" className="text-brand-dark/70 text-sm mb-1 block">Categories (Strongly Recommended)</label>
+            <button id="categories-button" type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-left flex justify-between items-center">
+              <span className={`truncate ${categories.length > 0 ? 'text-brand-dark' : 'text-gray-400'}`}>
+                {categories.length > 0 ? categories.join(', ') : 'Select categories'}
+              </span>
+              <svg className={`w-5 h-5 transition-transform flex-shrink-0 ${isCategoryOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            {isCategoryOpen && (
+              <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {availableCategories.map(cat => (
+                  <label key={cat} className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                    <input type="checkbox" checked={categories.includes(cat)} onChange={() => handleCategoryChange(cat)} className="h-4 w-4 rounded border-gray-300 text-brand-accent focus:ring-brand-accent" />
+                    <span className="ml-3 text-brand-dark text-sm">{cat}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
           
           <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
@@ -124,14 +175,14 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                   </div>
               </div>
               <div className="flex-1">
-                  <label className="text-brand-dark/70 text-sm mb-1 block">Quantity</label>
-                  <input type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" min="1" required />
+                  <label htmlFor="quantity" className="text-brand-dark/70 text-sm mb-1 block">Quantity</label>
+                  <input id="quantity" type="number" placeholder="e.g. 5" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" min="1" required />
               </div>
           </div>
 
           <div>
-             <label className="text-brand-dark/70 text-sm mb-1 block">Price (₹)</label>
-             <input type="number" placeholder="999.99" value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" step="0.01" min="0" required />
+             <label htmlFor="price" className="text-brand-dark/70 text-sm mb-1 block">Price (₹)</label>
+             <input id="price" type="number" placeholder="Enter Price" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" step="10" min="0" required />
           </div>
 
           <div>
