@@ -23,7 +23,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from('products')
       .select('*')
       .eq('user_id', session.user.id)

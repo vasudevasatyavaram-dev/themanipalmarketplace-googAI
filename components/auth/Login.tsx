@@ -12,7 +12,7 @@ const GoogleIcon = () => (
 );
 
 const StoreIcon = () => (
-    <div className="w-20 h-20 bg-brand-accent rounded-full flex items-center justify-center mb-6">
+    <div className="w-20 h-20 bg-brand-accent rounded-full flex items-center justify-center">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FAF9E1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" />
             <path d="M9 22V12H15V22" />
@@ -26,6 +26,7 @@ const Login: React.FC = () => {
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
     const [view, setView] = useState<'email' | 'phone' | 'otp'>('email');
+    const [otpMethod, setOtpMethod] = useState<'email' | 'phone'>('email');
     const [error, setError] = useState<string | null>(null);
 
     const handleLogin = async (e: FormEvent) => {
@@ -33,7 +34,8 @@ const Login: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const { error } = await supabase.auth.signInWithOtp({
+            setOtpMethod(view as 'email' | 'phone');
+            const { error } = await supabase!.auth.signInWithOtp({
                 email: view === 'email' ? email : undefined,
                 phone: view === 'phone' ? `+91${phone}` : undefined,
             });
@@ -53,11 +55,11 @@ const Login: React.FC = () => {
         setError(null);
 
         try {
-             const params = email 
+             const params = otpMethod === 'email' 
                 ? { email, token: otp, type: 'email' as const } 
                 : { phone: `+91${phone}`, token: otp, type: 'sms' as const };
             
-            const { error } = await supabase.auth.verifyOtp(params);
+            const { error } = await supabase!.auth.verifyOtp(params);
             
             if (error) throw error;
             // The onAuthStateChange listener in App.tsx will handle the session update
@@ -71,7 +73,7 @@ const Login: React.FC = () => {
     const signInWithGoogle = async () => {
         setLoading(true);
         setError(null);
-        await supabase.auth.signInWithOAuth({ provider: 'google' });
+        await supabase!.auth.signInWithOAuth({ provider: 'google' });
         setLoading(false);
     }
 
@@ -143,21 +145,31 @@ const Login: React.FC = () => {
     
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-brand-light p-4">
-            <div className="max-w-md w-full bg-brand-cream shadow-2xl rounded-2xl p-8 space-y-8">
-                <div className="text-center">
+            <div className="text-center mb-8">
+                <div className="inline-block">
                     <StoreIcon />
-                    <h2 className="mt-6 text-3xl font-extrabold text-brand-dark">
-                        Seller Dashboard
+                </div>
+                <h1 className="mt-4 text-3xl font-bold text-brand-dark tracking-wider">
+                    • the manipal marketplace •
+                </h1>
+                <p className="mt-1 text-md text-brand-dark/70">
+                    Seller Dashboard - Manage your products
+                </p>
+            </div>
+            <div className="max-w-md w-full bg-brand-cream shadow-2xl rounded-2xl p-8 space-y-6">
+                <div className="text-left">
+                    <h2 className="text-3xl font-bold text-brand-dark">
+                        Welcome
                     </h2>
-                    <p className="mt-2 text-brand-dark/70">
-                        Sign in to manage your products
+                    <p className="mt-1 text-brand-dark/70">
+                        Login or create an account to get started
                     </p>
                 </div>
                 
                 {renderForm()}
                 
                 {view !== 'otp' && (
-                     <div className="text-center">
+                     <div className="text-center pt-4">
                         <button onClick={() => setView(view === 'email' ? 'phone' : 'email')} className="font-medium text-sm text-brand-accent hover:text-brand-accent/80">
                            {view === 'email' ? 'Use phone instead' : 'Use email instead'}
                         </button>
@@ -166,7 +178,7 @@ const Login: React.FC = () => {
 
                 {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-                <div className="relative">
+                <div className="relative pt-2">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-300"></div>
                     </div>
