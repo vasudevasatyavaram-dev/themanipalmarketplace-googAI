@@ -26,6 +26,7 @@ export interface Database {
           title: string
           type: string
           user_id: string
+          edit_count: number
         }
         Insert: {
           approval_status?: string
@@ -42,6 +43,7 @@ export interface Database {
           title: string
           type: string
           user_id: string
+          edit_count?: number
         }
         Update: {
           approval_status?: string
@@ -58,6 +60,7 @@ export interface Database {
           title?: string
           type?: string
           user_id?: string
+          edit_count?: number
         }
         Relationships: [
           {
