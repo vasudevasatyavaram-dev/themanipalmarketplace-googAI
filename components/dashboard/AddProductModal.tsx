@@ -75,12 +75,31 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (images.length === 0) {
-        setError('Please upload at least one image.');
-        return;
-    }
-    setLoading(true);
     setError(null);
+
+    // Comprehensive validation
+    if (!title.trim()) {
+      setError('Product Title is required.');
+      return;
+    }
+    if (!description.trim()) {
+      setError('Product Description is required.');
+      return;
+    }
+    if (quantity < 1) {
+      setError('Quantity must be at least 1.');
+      return;
+    }
+    if (!price || parseInt(price, 10) <= 0) {
+      setError('Price must be a positive number.');
+      return;
+    }
+    if (images.length === 0) {
+      setError('Please upload at least one image.');
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const imageUrls: string[] = [];
@@ -105,7 +124,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
         user_id: userId,
         title,
         description,
-        category: categories,
+        category: categories.length > 0 ? categories : null,
         type,
         quantity_left: quantity,
         price: parseInt(price, 10),
@@ -199,7 +218,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
         </form>
         <div className="p-3 border-t border-brand-dark/10 flex justify-end gap-3 sticky bottom-0 bg-brand-light">
             <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-5 rounded-lg hover:bg-gray-300 transition text-sm">Cancel</button>
-            <button type="submit" disabled={loading} onClick={handleSubmit} className="bg-brand-accent text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[100px] text-sm">
+            <button type="submit" disabled={loading} className="bg-brand-accent text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[100px] text-sm">
               {loading ? <Spinner /> : 'Add Product'}
             </button>
         </div>
