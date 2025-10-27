@@ -33,7 +33,7 @@ function App() {
   }
 
   return (
-    <div className={`min-h-screen font-sans ${!session ? 'bg-brand-light' : 'bg-brand-dark'}`}>
+    <div className="min-h-screen font-sans bg-brand-light">
       {!session ? <Login /> : <Dashboard key={session.user.id} session={session} />}
     </div>
   );

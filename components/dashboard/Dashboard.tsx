@@ -50,13 +50,13 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const totalSold = products.reduce((sum, p) => sum + p.quantity_sold, 0);
 
   return (
-    <div className="min-h-screen bg-brand-dark">
+    <div>
       <Header user={session.user} />
       <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-                <h1 className="text-3xl font-bold text-brand-cream">Welcome, Seller!</h1>
-                <p className="text-brand-light/70 mt-1">Here's your product overview.</p>
+                <h1 className="text-3xl font-bold text-brand-dark">Welcome, Seller!</h1>
+                <p className="text-brand-dark/70 mt-1">Here's your product overview.</p>
             </div>
             <button
                 onClick={() => setIsModalOpen(true)}
@@ -68,17 +68,17 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-black/20 p-6 rounded-xl shadow-lg">
-                <h3 className="text-brand-light/70 text-sm font-medium">Total Products</h3>
-                <p className="text-3xl font-bold text-brand-cream mt-1">{products.length}</p>
+            <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5">
+                <h3 className="text-brand-dark/70 text-sm font-medium">Total Products</h3>
+                <p className="text-3xl font-bold text-brand-dark mt-1">{products.length}</p>
             </div>
-             <div className="bg-black/20 p-6 rounded-xl shadow-lg">
-                <h3 className="text-brand-light/70 text-sm font-medium">Total Items in Stock</h3>
-                <p className="text-3xl font-bold text-brand-cream mt-1">{totalQuantity}</p>
+             <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5">
+                <h3 className="text-brand-dark/70 text-sm font-medium">Total Items in Stock</h3>
+                <p className="text-3xl font-bold text-brand-dark mt-1">{totalQuantity}</p>
             </div>
-             <div className="bg-black/20 p-6 rounded-xl shadow-lg">
-                <h3 className="text-brand-light/70 text-sm font-medium">Total Items Sold</h3>
-                <p className="text-3xl font-bold text-brand-cream mt-1">{totalSold}</p>
+             <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5">
+                <h3 className="text-brand-dark/70 text-sm font-medium">Total Items Sold</h3>
+                <p className="text-3xl font-bold text-brand-dark mt-1">{totalSold}</p>
             </div>
         </div>
 

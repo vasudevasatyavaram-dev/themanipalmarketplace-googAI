@@ -16,16 +16,16 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   };
 
   return (
-    <header className="bg-brand-dark/50 backdrop-blur-sm sticky top-0 z-10">
+    <header className="bg-brand-cream/90 backdrop-blur-sm sticky top-0 z-10 border-b border-brand-dark/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20 border-b border-brand-light/10">
+        <div className="flex justify-between items-center h-20">
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold text-brand-cream">
+            <h1 className="text-2xl font-bold text-brand-dark">
                 Seller Dashboard
             </h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-brand-light/80 hidden sm:block">{user.email || user.phone}</span>
+            <span className="text-brand-dark/80 hidden sm:block">{user.email || user.phone}</span>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 text-brand-light hover:text-white bg-brand-accent/80 hover:bg-brand-accent transition-colors px-4 py-2 rounded-lg font-medium"
