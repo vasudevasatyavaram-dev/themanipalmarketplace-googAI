@@ -31,25 +31,34 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const [croppingImage, setCroppingImage] = useState<ImageFile | null>(null);
+  const [filesToCrop, setFilesToCrop] = useState<File[]>([]);
+  const [croppingImage, setCroppingImage] = useState<{ id: string; preview: string } | null>(null);
 
-  const availableCategories = ["Books", "Tech and Gadgets", "Cycles, Bikes, etc", "Brand New", "Home & Kitchen Essentials", "Rent", "Other"];
+  const availableCategories = ["Books", "Tech and Gadgets", "Sports and Fitness", "Cycles, Bikes, etc", "Brand New", "Home & Kitchen Essentials", "Rent", "Other"];
   
   const MAX_FILE_SIZE = 12 * 1024 * 1024; // 12 MB
   const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml', 'image/tiff'];
   const MAX_IMAGE_COUNT = 5;
 
+  useEffect(() => {
+    if (!croppingImage && filesToCrop.length > 0) {
+      const nextFile = filesToCrop[0];
+      setCroppingImage({
+        id: `${nextFile.name}-${nextFile.lastModified}`,
+        preview: URL.createObjectURL(nextFile),
+      });
+    }
+  }, [filesToCrop, croppingImage]);
 
-  const handleFiles = (files: File[]) => {
+  const handleFiles = (incomingFiles: File[]) => {
     setError(null);
-    
-    if (images.length + files.length > MAX_IMAGE_COUNT) {
+    if (images.length + filesToCrop.length + incomingFiles.length > MAX_IMAGE_COUNT) {
       setError(`You can only upload a maximum of ${MAX_IMAGE_COUNT} images.`);
       return;
     }
 
-    const newImageFiles: ImageFile[] = [];
-    for (const file of files) {
+    const validFiles: File[] = [];
+    for (const file of incomingFiles) {
       if (file.size > MAX_FILE_SIZE) {
         setError(`File "${file.name}" exceeds the 12 MB size limit.`);
         return;
@@ -58,14 +67,10 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
         setError(`File type for "${file.name}" is not supported.`);
         return;
       }
-      newImageFiles.push({
-        id: `${file.name}-${file.lastModified}-${Math.random()}`,
-        file,
-        preview: URL.createObjectURL(file)
-      });
+      validFiles.push(file);
     }
     
-    setImages(prev => [...prev, ...newImageFiles]);
+    setFilesToCrop(prev => [...prev, ...validFiles]);
   };
   
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,7 +93,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     }
   };
 
-
   const handleImageDelete = (id: string) => {
     setImages(prevImages => {
       const imageToDelete = prevImages.find(img => img.id === id);
@@ -98,27 +102,28 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
       return prevImages.filter(img => img.id !== id);
     });
   };
-
+  
   const onCropComplete = (croppedFile: File) => {
     if (!croppingImage) return;
 
-    setImages(prevImages => {
-      return prevImages.map(img => {
-        if (img.id === croppingImage.id) {
-          URL.revokeObjectURL(img.preview); // Clean up old preview
-          return {
-            ...img,
-            file: croppedFile,
-            preview: URL.createObjectURL(croppedFile)
-          };
-        }
-        return img;
-      });
-    });
+    const newImage: ImageFile = {
+      id: `${croppedFile.name}-${Date.now()}`,
+      file: croppedFile,
+      preview: URL.createObjectURL(croppedFile),
+    };
+    setImages(prev => [...prev, newImage]);
 
+    URL.revokeObjectURL(croppingImage.preview);
     setCroppingImage(null);
+    setFilesToCrop(prev => prev.slice(1));
   };
 
+  const onCropCancel = () => {
+    if (!croppingImage) return;
+    URL.revokeObjectURL(croppingImage.preview);
+    setCroppingImage(null);
+    setFilesToCrop(prev => prev.slice(1));
+  }
 
   const resetForm = useCallback(() => {
     setTitle('');
@@ -130,6 +135,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     setPrice('');
     images.forEach(img => URL.revokeObjectURL(img.preview));
     setImages([]);
+    setFilesToCrop([]);
+    setCroppingImage(null);
     setError(null);
   }, [images]);
 
@@ -164,11 +171,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     setError(null);
 
     if (!title.trim() || !description.trim() || quantity < 1 || !price || parseFloat(price) <= 0 || images.length === 0) {
-      setError('Please fill all required fields.');
-      return;
-    }
-    if (images.length === 0) {
-      setError('Please upload at least one image.');
+      setError('Please fill all required fields, including at least one image.');
       return;
     }
 
@@ -226,98 +229,96 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-2 sm:p-4">
-        <div className="bg-brand-light border border-brand-dark/10 rounded-2xl shadow-2xl w-full max-w-xl max-h-[95vh] flex flex-col">
-          <div className="p-4 border-b border-brand-dark/10 flex justify-between items-center sticky top-0 bg-brand-light z-10">
-            <h2 className="text-xl font-bold text-brand-dark">Add New Product</h2>
+        <div className="bg-brand-light border border-brand-dark/10 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] flex flex-col">
+          <div className="p-5 border-b border-brand-dark/10 flex justify-between items-center sticky top-0 bg-brand-light z-10">
+            <h2 className="text-2xl font-bold text-brand-dark">Add New Product</h2>
             <button onClick={handleClose} className="text-brand-dark/70 hover:text-brand-dark text-3xl leading-none">&times;</button>
           </div>
-          <form id="add-product-form" onSubmit={handleSubmit} className="p-4 space-y-2 overflow-y-auto flex-grow">
-            <div>
-              <label htmlFor="title" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Title <span className="text-red-500">*</span></label>
-              <input id="title" type="text" placeholder="ex: Apple Airpods Pro MagChase Charger" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" required />
-            </div>
+          <form id="add-product-form" onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-grow">
             
-            <div>
-              <label htmlFor="description" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Description <span className="text-red-500">*</span></label>
-              <textarea id="description" placeholder="ex: Mint Condition, Small size, etc" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" rows={2} required></textarea>
-            </div>
-            
-            <div className="relative" ref={categoryRef}>
-              <label htmlFor="categories-button" className="text-brand-dark/70 text-xs font-medium mb-1 block">Product Categories (strongly recommended)</label>
-              <button id="categories-button" type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-left flex justify-between items-center text-sm">
-                <span className={`truncate ${categories.length > 0 ? 'text-brand-dark' : 'text-gray-400'}`}>
-                  {categories.length > 0 ? categories.join(', ') : 'Select categories'}
-                </span>
-                <svg className={`w-4 h-4 transition-transform flex-shrink-0 ${isCategoryOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-              </button>
-              {isCategoryOpen && (
-                <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                  {availableCategories.map(cat => (
-                    <label key={cat} className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer">
-                      <input type="checkbox" checked={categories.includes(cat)} onChange={() => handleCategoryChange(cat)} className="h-4 w-4 rounded border-gray-300 text-brand-accent focus:ring-brand-accent" />
-                      <span className="ml-2 text-brand-dark text-sm">{cat}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-1">
-                    <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Type <span className="text-red-500">*</span></label>
-                    <div className="flex bg-brand-cream border border-brand-dark/20 rounded-lg p-0.5">
-                        <button type="button" onClick={() => setType('buy')} className={`w-1/2 py-1.5 rounded-md text-xs font-medium transition ${type === 'buy' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80'}`}>Buy</button>
-                        <button type="button" onClick={() => setType('rent')} className={`w-1/2 py-1.5 rounded-md text-xs font-medium transition ${type === 'rent' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80'}`}>Rent</button>
-                    </div>
-                </div>
-                <div className="col-span-1">
-                    <label htmlFor="quantity" className="text-brand-dark/70 text-xs font-medium mb-1 block">Quantity <span className="text-red-500">*</span></label>
-                    <input id="quantity" type="number" placeholder="e.g. 5" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" min="1" required />
-                </div>
-            </div>
-
-            <div>
-              <label htmlFor="price" className="text-brand-dark/70 text-xs font-medium mb-1 block">Price (₹) <span className="text-red-500">*</span></label>
-              <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" step="10" min="0" required />
-            </div>
-
             <div
+                onClick={() => fileInputRef.current?.click()}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`p-3 border-2 border-dashed rounded-lg transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300'}`}
+                className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300 hover:border-brand-accent/50'}`}
             >
-              <label className="text-brand-dark/70 text-xs font-medium mb-2 block">Images (up to 5) <span className="text-red-500">*</span></label>
-              <div className="text-center">
-                  <p className="text-xs text-brand-dark/60 mb-2">Drag & drop images here, or click to browse</p>
-                  <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,image/tiff" className="w-full text-xs text-brand-dark/70 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" />
-              </div>
-              <p className="text-xs text-brand-dark/60 mt-1 text-center">Max 12 MB per image. Allowed types: JPG, PNG, GIF, etc.</p>
-              {images.length > 0 && (
-                  <div className="mt-2 grid grid-cols-3 sm:grid-cols-5 gap-2">
-                      {images.map((image) => (
-                        <div key={image.id} className="relative group">
-                           <img src={image.preview} alt="Preview" className="w-full h-20 sm:h-24 object-cover rounded-lg" />
-                           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 rounded-lg flex items-center justify-center gap-1">
-                              <button type="button" onClick={() => setCroppingImage(image)} className="text-white opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-white/20" title="Crop Image">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"></path><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"></path></svg>
-                              </button>
-                              <button type="button" onClick={() => handleImageDelete(image.id)} className="text-white opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-white/20" title="Delete Image">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                              </button>
-                           </div>
-                        </div>
-                      ))}
-                  </div>
-              )}
+              <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept={ALLOWED_MIME_TYPES.join(',')} className="hidden" disabled={images.length >= MAX_IMAGE_COUNT}/>
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/80 mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <p className="text-brand-dark font-semibold">Drag & drop images here, or click to browse</p>
+              <p className="text-xs text-brand-dark/60 mt-1">Add up to 5 images. Max 12MB each.</p>
+            </div>
+            {images.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                    {images.map((image) => (
+                      <div key={image.id} className="relative group aspect-square">
+                         <img src={image.preview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 rounded-lg flex items-center justify-center">
+                            <button type="button" onClick={() => handleImageDelete(image.id)} className="text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full hover:bg-white/20" title="Delete Image">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                         </div>
+                      </div>
+                    ))}
+                </div>
+            )}
+            
+            <div>
+              <label htmlFor="title" className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Title <span className="text-red-500">*</span></label>
+              <input id="title" type="text" placeholder="e.g., Apple AirPods Pro (2nd Gen)" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" required />
             </div>
             
-            {error && <p className="text-red-500 text-xs text-center py-1">{error}</p>}
+            <div>
+              <label htmlFor="description" className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Description <span className="text-red-500">*</span></label>
+              <textarea id="description" placeholder="Describe the item's condition, features, and any other relevant details." value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" rows={3} required></textarea>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="relative" ref={categoryRef}>
+                <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Categories (Recommended)</label>
+                <button type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-left flex justify-between items-center">
+                  <span className={`truncate ${categories.length > 0 ? 'text-brand-dark' : 'text-gray-400'}`}>
+                    {categories.length > 0 ? categories.join(', ') : 'Select categories...'}
+                  </span>
+                  <svg className={`w-5 h-5 transition-transform flex-shrink-0 text-gray-500 ${isCategoryOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                {isCategoryOpen && (
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {availableCategories.map(cat => (
+                      <label key={cat} className="flex items-center px-4 py-2.5 hover:bg-gray-100 cursor-pointer">
+                        <input type="checkbox" checked={categories.includes(cat)} onChange={() => handleCategoryChange(cat)} className="h-4 w-4 rounded border-gray-300 text-brand-accent focus:ring-brand-accent" />
+                        <span className="ml-3 text-brand-dark">{cat}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+               <div>
+                  <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Type <span className="text-red-500">*</span></label>
+                  <div className="flex bg-brand-cream border border-brand-dark/20 rounded-lg p-1">
+                      <button type="button" onClick={() => setType('buy')} className={`w-1/2 py-2 rounded-md font-medium transition ${type === 'buy' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80 hover:bg-white/50'}`}>Buy</button>
+                      <button type="button" onClick={() => setType('rent')} className={`w-1/2 py-2 rounded-md font-medium transition ${type === 'rent' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80 hover:bg-white/50'}`}>Rent</button>
+                  </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div>
+                  <label htmlFor="quantity" className="text-brand-dark/80 text-sm font-medium mb-1 block">Quantity <span className="text-red-500">*</span></label>
+                  <input id="quantity" type="number" placeholder="e.g. 1" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" min="1" required />
+              </div>
+              <div>
+                <label htmlFor="price" className="text-brand-dark/80 text-sm font-medium mb-1 block">Price (₹) <span className="text-red-500">*</span></label>
+                <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" step="10" min="0" required />
+              </div>
+            </div>
+            
+            {error && <p className="text-red-500 text-sm text-center py-1">{error}</p>}
           </form>
-          <div className="p-3 border-t border-brand-dark/10 flex justify-end gap-3 sticky bottom-0 bg-brand-light">
-              <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-5 rounded-lg hover:bg-gray-300 transition text-sm">Cancel</button>
-              <button type="submit" form="add-product-form" disabled={loading} className="bg-brand-accent text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[100px] text-sm">
+          <div className="p-4 border-t border-brand-dark/10 flex justify-end gap-3 sticky bottom-0 bg-brand-light">
+              <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2.5 px-6 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+              <button type="submit" form="add-product-form" disabled={loading} className="bg-brand-accent text-white font-bold py-2.5 px-6 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[120px]">
                 {loading ? <Spinner /> : 'Add Product'}
               </button>
           </div>
@@ -326,7 +327,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
       {croppingImage && (
         <ImageCropModal 
           imageSrc={croppingImage.preview}
-          onClose={() => setCroppingImage(null)}
+          onClose={onCropCancel}
           onCropComplete={onCropComplete}
         />
       )}

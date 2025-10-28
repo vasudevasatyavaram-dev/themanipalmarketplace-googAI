@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Product } from '../../types';
 
 interface ProductListProps {
@@ -14,7 +14,6 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const getStatusChipClass = (status: string) => {
     switch (status) {
@@ -24,38 +23,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) 
       default: return 'bg-gray-500/20 text-gray-700';
     }
   };
-  
-  const nextImage = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setCurrentImageIndex(prev => (prev + 1) % product.image_url.length);
-  };
-  const prevImage = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setCurrentImageIndex(prev => (prev - 1 + product.image_url.length) % product.image_url.length);
-  };
 
   const canEdit = product.approval_status === 'pending' && product.edit_count < 3;
-  const hasMultipleImages = product.image_url && product.image_url.length > 1;
 
   return (
     <div className={`bg-brand-cream rounded-xl flex flex-col shadow-lg transition-transform hover:scale-[1.02] duration-300 ease-in-out border border-brand-dark/5 overflow-hidden ${product.approval_status === 'rejected' ? 'opacity-60' : ''}`}>
       <div className="w-full h-56 bg-white flex items-center justify-center p-2 relative group">
         {product.image_url?.length > 0 ? (
-          <img src={product.image_url[currentImageIndex]} alt={product.title} className="max-w-full max-h-full object-contain" />
+          <img src={product.image_url[0]} alt={product.title} className="max-w-full max-h-full object-contain" />
         ) : (
           <div className="w-full h-full bg-brand-light flex items-center justify-center">
             <span className="text-brand-dark/50">No Image</span>
           </div>
-        )}
-        {hasMultipleImages && (
-            <>
-                <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-                </button>
-                <button onClick={nextImage} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-                </button>
-            </>
         )}
       </div>
       <div className="p-4 flex flex-col flex-grow">
@@ -125,7 +104,7 @@ const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete })
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product) => (
         <ProductCard key={product.id} product={product} onEdit={onEdit} onDelete={onDelete}/>
       ))}
