@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../services/supabase';
 import type { Session } from '@supabase/supabase-js';
@@ -7,6 +8,7 @@ import Header from '../layout/Header';
 import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
 import VersionHistoryModal from './VersionHistoryModal';
+import ProfileModal from './ProfileModal';
 import ProductList from './ProductList';
 import Spinner from '../ui/Spinner';
 import Analytics from './Analytics';
@@ -30,6 +32,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [productForHistory, setProductForHistory] = useState<Product | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
@@ -138,7 +141,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
 
   return (
     <div>
-      <Header user={session.user} />
+      <Header user={session.user} onOpenProfile={() => setIsProfileModalOpen(true)} />
       <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
@@ -219,6 +222,11 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
             onReverted={handleHistoryReverted}
         />
       )}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        session={session}
+      />
     </div>
   );
 };

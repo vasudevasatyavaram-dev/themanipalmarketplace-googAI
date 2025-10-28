@@ -4,13 +4,19 @@ import type { User } from '@supabase/supabase-js';
 
 interface HeaderProps {
   user: User;
+  onOpenProfile: () => void;
 }
 
 const LogOutIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
 );
 
-const Header: React.FC<HeaderProps> = ({ user }) => {
+const UserIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+);
+
+
+const Header: React.FC<HeaderProps> = ({ user, onOpenProfile }) => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
@@ -27,11 +33,18 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                 • the manipal marketplace •
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-brand-dark/80 hidden sm:block font-medium">{user.email || user.phone}</span>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <span className="text-brand-dark/80 hidden sm:block font-medium text-sm truncate max-w-[200px]">{user.email || user.phone}</span>
+             <button
+              onClick={onOpenProfile}
+              className="flex items-center justify-center text-brand-dark hover:bg-brand-dark/5 border border-brand-dark/20 transition-colors w-10 h-10 rounded-lg font-semibold"
+              title="Profile Settings"
+            >
+              <UserIcon />
+            </button>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 text-brand-dark hover:bg-brand-dark/5 border border-brand-dark/20 transition-colors px-4 py-2 rounded-lg font-semibold"
+              className="flex items-center gap-2 text-brand-dark hover:bg-brand-dark/5 border border-brand-dark/20 transition-colors px-3 sm:px-4 h-10 rounded-lg font-semibold"
             >
               <LogOutIcon />
               <span className="hidden md:block">Logout</span>
