@@ -29,6 +29,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const [error, setError] = useState<string | null>(null);
   const categoryRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const [filesToCrop, setFilesToCrop] = useState<File[]>([]);
@@ -166,6 +167,24 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     };
   }, [categoryRef, images]);
 
+  const handleAddBulletPoint = () => {
+    const textarea = descriptionRef.current;
+    if (!textarea) return;
+
+    const { selectionStart, selectionEnd, value } = textarea;
+    const newText = 
+        value.substring(0, selectionStart) + 
+        '• ' + 
+        value.substring(selectionEnd);
+
+    setDescription(newText);
+
+    setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(selectionStart + 2, selectionStart + 2);
+    }, 0);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -270,8 +289,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             </div>
             
             <div>
-              <label htmlFor="description" className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Description <span className="text-red-500">*</span></label>
-              <textarea id="description" placeholder="Describe the item's condition, features, and any other relevant details." value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" rows={3} required></textarea>
+                <div className="flex justify-between items-center mb-1">
+                    <label htmlFor="description" className="text-brand-dark/80 text-sm font-medium">Product Description <span className="text-red-500">*</span></label>
+                    <button type="button" onClick={handleAddBulletPoint} className="text-xs font-semibold text-brand-accent hover:underline">Add Bullet Point</button>
+                </div>
+              <textarea ref={descriptionRef} id="description" placeholder="Describe the item's condition, features, and any other relevant details." value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" rows={3} required></textarea>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -64,7 +64,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) 
              <p><span className="font-semibold">List Price:</span> ₹{product.price}</p>
         </div>
         
-        <p className={`text-brand-dark/70 text-sm mb-4 flex-grow transition-opacity ${isRejected ? 'opacity-60' : ''}`}>{product.description}</p>
+        <p className={`text-brand-dark/70 text-sm mb-4 flex-grow transition-opacity whitespace-pre-wrap ${isRejected ? 'opacity-60' : ''}`}>{product.description}</p>
 
         <div className="border-t border-brand-dark/10 pt-3 mt-auto">
             <div className={`flex justify-between items-center text-sm text-brand-dark/70 mb-3 transition-opacity ${isRejected ? 'opacity-60' : ''}`}>
