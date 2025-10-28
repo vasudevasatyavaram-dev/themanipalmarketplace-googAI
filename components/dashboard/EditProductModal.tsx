@@ -40,8 +40,13 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const [error, setError] = useState<string | null>(null);
   const categoryRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const [croppingImage, setCroppingImage] = useState<ImageFile | null>(null);
+
+  const [isDirty, setIsDirty] = useState(false);
+  // Fix: The previous type `Partial<Product> & { price: string; ... }` created a conflict for the `price` property (`number` vs `string`), resulting in a `never` type that caused downstream errors. This explicit type correctly defines the shape of the initial form state.
+  const initialProductState = useRef<{ title: string; description: string; category: string[]; type: "buy" | "rent"; quantity_left: number; price: string; } | null>(null);
 
   useEffect(() => {
     if (productToEdit) {
@@ -53,12 +58,42 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
         setPrice(String(productToEdit.price));
         setExistingImages(productToEdit.image_url.map((url, index) => ({ id: `existing-${index}-${url}`, url })));
         
-        // Reset states for new modal instance
+        // Store initial state for dirty check
+        initialProductState.current = {
+            title: productToEdit.title,
+            description: productToEdit.description,
+            category: productToEdit.category || [],
+            type: productToEdit.type as 'buy' | 'rent',
+            quantity_left: productToEdit.quantity_left,
+            price: String(productToEdit.price),
+        };
+        
         setNewImages([]);
         setImagesToDelete([]);
         setError(null);
+        setIsDirty(false);
     }
   }, [productToEdit]);
+
+  useEffect(() => {
+    if (!productToEdit || !initialProductState.current) return;
+
+    const sortedCategories = [...categories].sort();
+    const sortedInitialCategories = [...initialProductState.current.category].sort();
+
+    const hasChanged = 
+      title !== initialProductState.current.title ||
+      description !== initialProductState.current.description ||
+      quantity !== initialProductState.current.quantity_left ||
+      price !== initialProductState.current.price ||
+      type !== initialProductState.current.type ||
+      JSON.stringify(sortedCategories) !== JSON.stringify(sortedInitialCategories) ||
+      newImages.length > 0 ||
+      imagesToDelete.length > 0;
+    
+    setIsDirty(hasChanged);
+
+  }, [title, description, categories, type, quantity, price, newImages, imagesToDelete, productToEdit]);
 
 
   const availableCategories = ["Books", "Tech and Gadgets", "Cycles, Bikes, etc", "Brand New", "Home & Kitchen Essentials", "Rent", "Other"];
@@ -67,27 +102,20 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml', 'image/tiff'];
   const MAX_IMAGE_COUNT = 5;
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFiles = (files: File[]) => {
     setError(null);
-    if (!e.target.files) return;
-    const files = Array.from(e.target.files);
-    
     if (existingImages.length + newImages.length + files.length > MAX_IMAGE_COUNT) {
       setError(`You can only have a maximum of ${MAX_IMAGE_COUNT} images in total.`);
-      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
-    // ... validation logic from AddProductModal ...
      const newImageFiles: ImageFile[] = [];
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
         setError(`File "${file.name}" exceeds the 12 MB size limit.`);
-        if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
       if (!ALLOWED_MIME_TYPES.includes(file.type)) {
         setError(`File type for "${file.name}" is not supported.`);
-        if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
       newImageFiles.push({
@@ -96,9 +124,27 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
         preview: URL.createObjectURL(file)
       });
     }
-    
     setNewImages(prev => [...prev, ...newImageFiles]);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      handleFiles(Array.from(e.target.files));
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
+  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(Array.from(e.dataTransfer.files));
+      e.dataTransfer.clearData();
+    }
   };
   
   const handleNewImageDelete = (id: string) => {
@@ -249,10 +295,19 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
               <label htmlFor="price-edit" className="text-brand-dark/70 text-xs font-medium mb-1 block">Price (₹) <span className="text-red-500">*</span></label>
               <input id="price-edit" type="number" value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" min="0" required />
             </div>
-            <div>
-              <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Images (up to 5) <span className="text-red-500">*</span></label>
-              <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept="image/*" className="w-full text-xs text-brand-dark/70 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" />
-              <p className="text-xs text-brand-dark/60 mt-1">Add more images. Max 12 MB per image.</p>
+            <div
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                className={`p-3 border-2 border-dashed rounded-lg transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300'}`}
+            >
+              <label className="text-brand-dark/70 text-xs font-medium mb-2 block">Images (up to 5) <span className="text-red-500">*</span></label>
+              <div className="text-center">
+                  <p className="text-xs text-brand-dark/60 mb-2">Drag & drop new images here, or click to browse</p>
+                  <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept="image/*" className="w-full text-xs text-brand-dark/70 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" />
+              </div>
+              <p className="text-xs text-brand-dark/60 mt-1 text-center">Max 12 MB per image.</p>
                <div className="mt-2 grid grid-cols-3 sm:grid-cols-5 gap-2">
                     {existingImages.map((image) => (
                         <div key={image.id} className="relative group">
@@ -279,7 +334,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
           </form>
           <div className="p-3 border-t border-brand-dark/10 flex justify-end gap-3">
               <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-5 rounded-lg hover:bg-gray-300 transition text-sm">Cancel</button>
-              <button type="submit" form="edit-product-form" disabled={loading} className="bg-brand-accent text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[120px] text-sm">
+              <button type="submit" form="edit-product-form" disabled={loading || !isDirty} className="bg-brand-accent text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[120px] text-sm">
                 {loading ? <Spinner /> : 'Save Changes'}
               </button>
           </div>

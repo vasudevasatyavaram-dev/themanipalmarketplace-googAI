@@ -13,7 +13,7 @@ interface DashboardProps {
 }
 
 const PlusIcon = () => (
-    <svg xmlns="http://www.w.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
 );
 
 const Dashboard: React.FC<DashboardProps> = ({ session }) => {
@@ -23,6 +23,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const [notification, setNotification] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -45,8 +46,19 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   }, [fetchProducts]);
 
   const handleProductAdded = () => {
+    const isFirstProduct = products.length === 0;
     fetchProducts();
     setIsAddModalOpen(false);
+
+    if (isFirstProduct) {
+        setNotification("Congratulations on listing your first product! You'll be notified on your verified phone number once it's approved.");
+    } else {
+        setNotification("Product listed successfully! You'll be notified on your verified phone number once it's approved.");
+    }
+
+    setTimeout(() => {
+        setNotification(null);
+    }, 7000);
   };
 
   const handleProductEdited = () => {
@@ -111,17 +123,23 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
                 Add New Product
             </button>
         </div>
+
+        {notification && (
+            <div className="mb-6 p-4 bg-green-100 text-green-800 border border-green-200 rounded-lg shadow-md animate-fade-in-down">
+                {notification}
+            </div>
+        )}
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5">
+        <div className="flex overflow-x-auto md:grid md:grid-cols-3 gap-6 mb-8 pb-4 md:pb-0">
+            <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
                 <h3 className="text-brand-dark/70 text-sm font-medium">Total Products</h3>
                 <p className="text-3xl font-bold text-brand-dark mt-1">{products.length}</p>
             </div>
-             <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5">
+             <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
                 <h3 className="text-brand-dark/70 text-sm font-medium">Total Items in Stock</h3>
                 <p className="text-3xl font-bold text-brand-dark mt-1">{totalQuantity}</p>
             </div>
-             <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5">
+             <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
                 <h3 className="text-brand-dark/70 text-sm font-medium">Total Items Sold</h3>
                 <p className="text-3xl font-bold text-brand-dark mt-1">{totalSold}</p>
             </div>

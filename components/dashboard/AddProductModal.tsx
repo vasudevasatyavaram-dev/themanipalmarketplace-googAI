@@ -29,6 +29,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const [error, setError] = useState<string | null>(null);
   const categoryRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const [croppingImage, setCroppingImage] = useState<ImageFile | null>(null);
 
@@ -39,15 +40,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const MAX_IMAGE_COUNT = 5;
 
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFiles = (files: File[]) => {
     setError(null);
-    if (!e.target.files) return;
-
-    const files = Array.from(e.target.files);
     
     if (images.length + files.length > MAX_IMAGE_COUNT) {
       setError(`You can only upload a maximum of ${MAX_IMAGE_COUNT} images.`);
-       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
@@ -55,12 +52,10 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
         setError(`File "${file.name}" exceeds the 12 MB size limit.`);
-        if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
       if (!ALLOWED_MIME_TYPES.includes(file.type)) {
         setError(`File type for "${file.name}" is not supported.`);
-        if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
       newImageFiles.push({
@@ -71,9 +66,29 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     }
     
     setImages(prev => [...prev, ...newImageFiles]);
-    if (fileInputRef.current) fileInputRef.current.value = "";
   };
   
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      handleFiles(Array.from(e.target.files));
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
+  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(Array.from(e.dataTransfer.files));
+      e.dataTransfer.clearData();
+    }
+  };
+
+
   const handleImageDelete = (id: string) => {
     setImages(prevImages => {
       const imageToDelete = prevImages.find(img => img.id === id);
@@ -266,10 +281,19 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
               <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm" step="10" min="0" required />
             </div>
 
-            <div>
-              <label className="text-brand-dark/70 text-xs font-medium mb-1 block">Images (up to 5) <span className="text-red-500">*</span></label>
-              <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,image/tiff" className="w-full text-xs text-brand-dark/70 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" />
-              <p className="text-xs text-brand-dark/60 mt-1">Max 12 MB per image. Allowed types: JPG, PNG, GIF, etc.</p>
+            <div
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                className={`p-3 border-2 border-dashed rounded-lg transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300'}`}
+            >
+              <label className="text-brand-dark/70 text-xs font-medium mb-2 block">Images (up to 5) <span className="text-red-500">*</span></label>
+              <div className="text-center">
+                  <p className="text-xs text-brand-dark/60 mb-2">Drag & drop images here, or click to browse</p>
+                  <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,image/tiff" className="w-full text-xs text-brand-dark/70 file:mr-2 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-accent file:text-white hover:file:opacity-90 cursor-pointer" />
+              </div>
+              <p className="text-xs text-brand-dark/60 mt-1 text-center">Max 12 MB per image. Allowed types: JPG, PNG, GIF, etc.</p>
               {images.length > 0 && (
                   <div className="mt-2 grid grid-cols-3 sm:grid-cols-5 gap-2">
                       {images.map((image) => (
@@ -280,7 +304,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"></path><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"></path></svg>
                               </button>
                               <button type="button" onClick={() => handleImageDelete(image.id)} className="text-white opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-white/20" title="Delete Image">
-                                  <svg xmlns="http://www.w.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                               </button>
                            </div>
                         </div>
