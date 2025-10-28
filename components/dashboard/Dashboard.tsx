@@ -7,6 +7,7 @@ import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
 import ProductList from './ProductList';
 import Spinner from '../ui/Spinner';
+import Analytics from './Analytics';
 
 interface DashboardProps {
   session: Session;
@@ -163,7 +164,10 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
         ) : (
-          <ProductList products={products} onEdit={openEditModal} onDelete={handleDeleteProduct} />
+          <>
+            <ProductList products={products} onEdit={openEditModal} onDelete={handleDeleteProduct} />
+            {totalSold > 0 && <Analytics products={products} />}
+          </>
         )}
       </main>
       <AddProductModal

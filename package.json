@@ -12,7 +12,9 @@
     "react-dom": "^19.2.0",
     "react": "^19.2.0",
     "@supabase/supabase-js": "^2.76.1",
-    "react-image-crop": "^11.0.8"
+    "react-image-crop": "^11.0.8",
+    "chart.js": "^4.4.3",
+    "react-chartjs-2": "^5.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
