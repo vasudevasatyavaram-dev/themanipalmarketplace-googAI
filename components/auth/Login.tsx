@@ -45,8 +45,15 @@ const Login: React.FC = () => {
 
     const handleAuthAction = async (e: FormEvent) => {
         e.preventDefault();
-        setLoading(true);
         setError(null);
+
+        // Client-side validation before setting loading state
+        if (authView === 'signup' && (!fullName.trim() || !phone.trim())) {
+            setError('Full Name and Phone Number are required.');
+            return;
+        }
+
+        setLoading(true);
 
         try {
             if (authView === 'login') {
@@ -56,11 +63,6 @@ const Login: React.FC = () => {
                 });
                 if (error) throw error;
             } else { // signup
-                if (!fullName.trim() || !phone.trim()) {
-                    setError('Full Name and Phone Number are required.');
-                    setLoading(false);
-                    return;
-                }
                 const { error } = await supabase.auth.signInWithOtp({
                     phone: `+91${phone}`,
                     options: {
@@ -76,9 +78,7 @@ const Login: React.FC = () => {
         } catch (error: any) {
             setError(error.error_description || error.message);
         } finally {
-            if (error === null) { // only set loading to false if we didn't hit the validation error
-                 setLoading(false);
-            }
+            setLoading(false);
         }
     };
     
@@ -90,7 +90,6 @@ const Login: React.FC = () => {
         try {
             const isLoginWithEmail = authView === 'login' && loginMethod === 'email';
 
-            // Fix: Split supabase.auth.verifyOtp call to ensure correct type inference for email/phone params.
             if (isLoginWithEmail) {
                 const { error } = await supabase.auth.verifyOtp({
                     email,
@@ -99,7 +98,6 @@ const Login: React.FC = () => {
                 });
                 if (error) throw error;
             } else {
-                // This covers login with phone AND signup (which is always phone)
                 const { error } = await supabase.auth.verifyOtp({
                     phone: `+91${phone}`,
                     token: otp,

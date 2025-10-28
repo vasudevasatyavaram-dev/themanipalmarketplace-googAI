@@ -38,7 +38,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) 
   const hasMultipleImages = product.image_url && product.image_url.length > 1;
 
   return (
-    <div className="bg-brand-cream rounded-xl flex flex-col shadow-lg transition-transform hover:scale-[1.02] duration-300 ease-in-out border border-brand-dark/5 overflow-hidden">
+    <div className={`bg-brand-cream rounded-xl flex flex-col shadow-lg transition-transform hover:scale-[1.02] duration-300 ease-in-out border border-brand-dark/5 overflow-hidden ${product.approval_status === 'rejected' ? 'opacity-60' : ''}`}>
       <div className="w-full h-56 bg-white flex items-center justify-center p-2 relative group">
         {product.image_url?.length > 0 ? (
           <img src={product.image_url[currentImageIndex]} alt={product.title} className="max-w-full max-h-full object-contain" />
@@ -61,9 +61,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) 
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-bold text-lg text-brand-dark leading-tight pr-2">{product.title}</h3>
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${getStatusChipClass(product.approval_status)}`}>
-              {product.approval_status === 'pending' ? 'Approval Pending' : product.approval_status.charAt(0).toUpperCase() + product.approval_status.slice(1)}
-          </span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {product.approval_status === 'rejected' && product.reject_explanation && (
+                <div className="relative group">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-700 cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <div className="absolute bottom-full mb-2 w-48 bg-brand-dark text-white text-xs rounded-lg py-2 px-3 right-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10 shadow-lg">
+                        {product.reject_explanation}
+                        <svg className="absolute text-brand-dark h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
+                    </div>
+                </div>
+            )}
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${getStatusChipClass(product.approval_status)}`}>
+                {product.approval_status === 'pending' ? 'Approval Pending' : product.approval_status.charAt(0).toUpperCase() + product.approval_status.slice(1)}
+            </span>
+          </div>
         </div>
         
         <div className="space-y-1 text-sm text-brand-dark/80 mb-3">
