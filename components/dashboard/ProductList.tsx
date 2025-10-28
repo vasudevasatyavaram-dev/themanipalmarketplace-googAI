@@ -28,7 +28,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
     }
   };
 
-  const canEdit = product.approval_status === 'pending' && product.edit_count < 3;
+  const canEdit = (product.approval_status === 'pending' || product.approval_status === 'rejected') && product.edit_count < 3;
 
   const goToPrevious = () => {
     const isFirstSlide = currentIndex === 0;
@@ -106,21 +106,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                   <p>Qty Sold: <span className="font-bold text-brand-dark">{product.quantity_sold}</span></p>
               </div>
               <div className="flex items-end gap-2">
-                <div className={`flex flex-col text-center w-1/3 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
-                  <p className="text-xs text-brand-dark/60 mb-1 h-4">
-                    {canEdit && `${3 - product.edit_count} ${3 - product.edit_count === 1 ? 'edit' : 'edits'} left`}
-                  </p>
-                  <button 
-                    onClick={() => onEdit(product)}
-                    disabled={!canEdit}
-                    className="w-full text-center bg-white border border-brand-dark/50 text-brand-dark px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed"
-                    title={!canEdit ? (product.approval_status !== 'pending' ? 'Can only edit pending products' : 'Max edits reached') : ''}
-                  >
-                    Edit
-                  </button>
-                </div>
-                 {product.edit_count > 0 && (
-                   <div className={`flex flex-col text-center w-1/3 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
+                {product.approval_status !== 'approved' && (
+                  <div className={`flex flex-col text-center flex-1 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
+                    <p className="text-xs text-brand-dark/60 mb-1 h-4">
+                      {canEdit && `${3 - product.edit_count} ${3 - product.edit_count === 1 ? 'edit' : 'edits'} left`}
+                    </p>
+                    <button 
+                      onClick={() => onEdit(product)}
+                      disabled={!canEdit}
+                      className="w-full text-center bg-white border border-brand-dark/50 text-brand-dark px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed"
+                      title={!canEdit ? 'Max edits reached' : ''}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                )}
+                 {product.edit_count > 0 && product.approval_status !== 'approved' && (
+                   <div className={`flex flex-col text-center flex-1 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
                       <p className="text-xs text-brand-dark/60 mb-1 h-4"></p>
                       <button 
                           onClick={() => onHistory(product)}
@@ -130,7 +132,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                       </button>
                    </div>
                  )}
-                <div className="flex flex-col text-center w-1/3">
+                <div className="flex flex-col text-center flex-1">
                   <p className="text-xs text-brand-dark/60 mb-1 h-4"></p>
                   <button
                     onClick={() => onDelete(product)}

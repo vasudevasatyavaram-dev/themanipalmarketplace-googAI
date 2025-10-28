@@ -242,3 +242,15 @@ To maintain consistency with the main product list, the Version History modal ha
 
 **Behavior & Visual Change:**
 - In the details section for each version, if a product is a rental, the price will now be displayed along with its session (e.g., "Rental Price: ₹1500 / per night"). This ensures that sellers have a complete view of their product's history, including rental terms.
+
+---
+
+**UI/UX Improvement: Refine Product Card Actions**
+
+**Overview:**
+To create a clearer and more intuitive workflow for sellers, the action buttons ("Edit," "History," "Delete") on the product cards have been updated. The "Edit" and "History" buttons are now hidden for approved products, and the layout dynamically adjusts to the number of visible buttons.
+
+**Behavior & Visual Changes:**
+1.  **Hide Buttons for Approved Products:** The "Edit" and "History" buttons are no longer visible on product cards where the `approval_status` is 'approved'. This clarifies that approved listings are live and cannot be directly modified.
+2.  **Enable Editing for Rejected Products:** Sellers can now click "Edit" on a rejected product. This allows them to correct any issues based on rejection feedback and resubmit the product for approval.
+3.  **Dynamic Button Layout:** The button container now uses a flexible layout, so the buttons automatically and evenly share the available space. This ensures the layout always looks balanced and professional, whether one, two, or three buttons are visible.
