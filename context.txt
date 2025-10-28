@@ -248,7 +248,7 @@ To maintain consistency with the main product list, the Version History modal ha
 **UI/UX Improvement: Refine Product Card Actions**
 
 **Overview:**
-To create a clearer and more intuitive workflow for sellers, the action buttons ("Edit," "History," "Delete") on the product cards have been updated. The "Edit" and "History" buttons are now hidden for approved products, and the layout dynamically adjusts to the number of visible buttons.
+To create a clearer and more intuitive workflow for sellers, the action buttons ("Edit," "History," "Delete") on the product cards have been updated. The "Edit" and "History" buttons are now hidden for approved products, and the layout will dynamically adjust to the number of visible buttons.
 
 **Behavior & Visual Changes:**
 1.  **Hide Buttons for Approved Products:** The "Edit" and "History" buttons are no longer visible on product cards where the `approval_status` is 'approved'. This clarifies that approved listings are live and cannot be directly modified.
@@ -267,3 +267,16 @@ To improve the seller's experience when dealing with rejected products, several 
     *   Any version that was rejected is now visually de-emphasized with a reduced opacity ("dulled out").
     *   A "Rejected" status badge has been added next to the version number for clarity.
     *   The **"Revert to this version"** button is now disabled for any rejected version. This prevents sellers from accidentally reverting their product to a state that has already failed the approval process.
+
+---
+**UI/UX Improvement: Highlight Approved Products**
+
+**Overview:**
+To provide sellers with clear and satisfying visual confirmation that their product is live, the styling of approved product cards has been updated to make them stand out.
+
+**Behavior & Visual Changes:**
+1.  **"Live" Badge:** A new, prominent badge is now displayed in the top-left corner of the product image for all approved items. This vibrant green badge features a checkmark icon and the text "Live," instantly communicating the product's status.
+2.  **Enhanced Border:** The entire product card for an approved item now has a subtle but distinct green border, further distinguishing it from other products.
+3.  **Elevated Shadow:** The card is given a slightly more pronounced, permanent box-shadow, making it appear "lifted" and more important on the page, while still enhancing on hover.
+
+These changes make it easy for sellers to scan their dashboard and identify which products are active on the marketplace, providing positive reinforcement and improving clarity.

@@ -45,8 +45,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
 
   return (
     <div className="group">
-      <div className={`bg-brand-cream rounded-xl flex flex-col shadow-lg transition-all duration-300 ease-in-out border border-brand-dark/10 overflow-hidden group-hover:shadow-2xl group-hover:-translate-y-1`}>
+      <div className={`bg-brand-cream rounded-xl flex flex-col transition-all duration-300 ease-in-out overflow-hidden group-hover:shadow-2xl group-hover:-translate-y-1 ${isApproved ? 'border-2 border-green-500 shadow-xl' : 'border border-brand-dark/10 shadow-lg'}`}>
         <div className={`w-full h-56 bg-white flex items-center justify-center p-2 relative group/carousel transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
+          {isApproved && (
+            <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 z-10 shadow">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Live</span>
+            </div>
+          )}
           {product.image_url?.length > 0 ? (
             <img src={product.image_url[currentIndex]} alt={product.title} className="max-w-full max-h-full object-contain" />
           ) : (
@@ -60,7 +66,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                 <svg xmlns="http://www.w.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
               </button>
               <button onClick={goToNext} className="absolute top-1/2 right-2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1.5 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 hover:bg-black/60 z-10">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                <svg xmlns="http://www.w.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
               </button>
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
                 {product.image_url.map((_, slideIndex) => (
