@@ -345,7 +345,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
               </div>
               <div>
                 <label htmlFor="price-edit" className="text-brand-dark/80 text-sm font-medium mb-1 block">Price (₹) <span className="text-red-500">*</span></label>
-                <input id="price-edit" type="number" value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" min="0" required />
+                <input id="price-edit" type="number" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" min="1" required />
               </div>
             </div>
             {error && <p className="text-red-500 text-sm text-center py-1">{error}</p>}

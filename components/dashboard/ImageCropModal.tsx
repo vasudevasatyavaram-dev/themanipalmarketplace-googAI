@@ -71,7 +71,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
       { name: 'Square', value: 1 / 1 },
       { name: 'Portrait', value: 3 / 4 },
       { name: 'Landscape', value: 16 / 9 },
-      { name: 'Original', value: undefined },
+      { name: 'Auto', value: undefined },
   ];
 
   return (
@@ -82,7 +82,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
           <button onClick={onClose} className="text-brand-dark/70 hover:text-brand-dark text-3xl leading-none">&times;</button>
         </div>
         <div className="p-4 flex-grow overflow-y-auto">
-          <p className="text-sm text-brand-dark/70 text-center mb-2">Recommended crop is <span className="font-semibold">Square</span> for consistency.</p>
+          <p className="text-sm text-red-600/90 text-center mb-2 italic font-semibold">
+            Recommended crop is Square for consistency.
+          </p>
           <div className="flex justify-center gap-2 mb-4">
              {aspectPresets.map(preset => (
                 <button 

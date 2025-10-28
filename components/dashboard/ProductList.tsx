@@ -14,6 +14,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) => {
+  const isRejected = product.approval_status === 'rejected';
 
   const getStatusChipClass = (status: string) => {
     switch (status) {
@@ -27,8 +28,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) 
   const canEdit = product.approval_status === 'pending' && product.edit_count < 3;
 
   return (
-    <div className={`bg-brand-cream rounded-xl flex flex-col shadow-lg transition-transform hover:scale-[1.02] duration-300 ease-in-out border border-brand-dark/5 overflow-hidden ${product.approval_status === 'rejected' ? 'opacity-60' : ''}`}>
-      <div className="w-full h-56 bg-white flex items-center justify-center p-2 relative group">
+    <div className={`bg-brand-cream rounded-xl flex flex-col shadow-lg transition-transform hover:scale-[1.02] duration-300 ease-in-out border border-brand-dark/5 overflow-hidden`}>
+      <div className={`w-full h-56 bg-white flex items-center justify-center p-2 relative group transition-opacity ${isRejected ? 'opacity-60' : ''}`}>
         {product.image_url?.length > 0 ? (
           <img src={product.image_url[0]} alt={product.title} className="max-w-full max-h-full object-contain" />
         ) : (
@@ -39,7 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) 
       </div>
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-lg text-brand-dark leading-tight pr-2">{product.title}</h3>
+          <h3 className={`font-bold text-lg text-brand-dark leading-tight pr-2 transition-opacity ${isRejected ? 'opacity-60' : ''}`}>{product.title}</h3>
           <div className="flex items-center gap-2 flex-shrink-0">
             {product.approval_status === 'rejected' && product.reject_explanation && (
                 <div className="relative group">
@@ -56,35 +57,44 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) 
           </div>
         </div>
         
-        <div className="space-y-1 text-sm text-brand-dark/80 mb-3">
+        <div className={`space-y-1 text-sm text-brand-dark/80 mb-3 transition-opacity ${isRejected ? 'opacity-60' : ''}`}>
             {product.category && product.category.length > 0 && (
                 <p><span className="font-semibold">Category:</span> {product.category.join(', ')}</p>
             )}
              <p><span className="font-semibold">List Price:</span> ₹{product.price}</p>
         </div>
         
-        <p className="text-brand-dark/70 text-sm mb-4 flex-grow">{product.description}</p>
+        <p className={`text-brand-dark/70 text-sm mb-4 flex-grow transition-opacity ${isRejected ? 'opacity-60' : ''}`}>{product.description}</p>
 
         <div className="border-t border-brand-dark/10 pt-3 mt-auto">
-            <div className="flex justify-between items-center text-sm text-brand-dark/70 mb-3">
+            <div className={`flex justify-between items-center text-sm text-brand-dark/70 mb-3 transition-opacity ${isRejected ? 'opacity-60' : ''}`}>
                 <p>Qty Left: <span className="font-bold text-brand-dark">{product.quantity_left}</span></p>
                 <p>Qty Sold: <span className="font-bold text-brand-dark">{product.quantity_sold}</span></p>
             </div>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => onEdit(product)}
-                disabled={!canEdit}
-                className="flex-1 text-center bg-blue-600/90 text-white px-3 py-2 text-sm font-semibold rounded-md hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-                title={!canEdit ? (product.approval_status !== 'pending' ? 'Can only edit pending products' : 'Max edits reached') : ''}
-              >
-                Edit {product.approval_status === 'pending' ? `(${3 - product.edit_count} left)` : ''}
-              </button>
-              <button
-                onClick={() => onDelete(product)}
-                className="flex-1 text-center bg-red-600/90 text-white px-3 py-2 text-sm font-semibold rounded-md hover:bg-red-700 transition"
-              >
-                Delete
-              </button>
+            <div className="flex items-end gap-2">
+              <div className={`flex-1 text-center transition-opacity ${isRejected ? 'opacity-60' : ''}`}>
+                <button 
+                  onClick={() => onEdit(product)}
+                  disabled={!canEdit}
+                  className="w-full text-center bg-blue-600/90 text-white px-3 py-2 text-sm font-semibold rounded-md hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  title={!canEdit ? (product.approval_status !== 'pending' ? 'Can only edit pending products' : 'Max edits reached') : ''}
+                >
+                  Edit
+                </button>
+                {canEdit && (
+                    <p className="text-xs text-brand-dark/60 mt-1">
+                        {3 - product.edit_count} {3 - product.edit_count === 1 ? 'edit' : 'edits'} left
+                    </p>
+                )}
+              </div>
+              <div className="flex-1">
+                <button
+                  onClick={() => onDelete(product)}
+                  className="w-full text-center bg-red-600/90 text-white px-3 py-2 text-sm font-semibold rounded-md hover:bg-red-700 transition"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
         </div>
 
