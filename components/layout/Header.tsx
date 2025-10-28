@@ -5,6 +5,7 @@ import type { User } from '@supabase/supabase-js';
 interface HeaderProps {
   user: User;
   onOpenProfile: () => void;
+  onOpenReportProblem: () => void;
   onNavigate: (view: 'dashboard' | 'best_practices') => void;
 }
 
@@ -20,8 +21,11 @@ const BookIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
 );
 
+const HelpIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+);
 
-const Header: React.FC<HeaderProps> = ({ user, onOpenProfile, onNavigate }) => {
+const Header: React.FC<HeaderProps> = ({ user, onOpenProfile, onNavigate, onOpenReportProblem }) => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
@@ -46,6 +50,13 @@ const Header: React.FC<HeaderProps> = ({ user, onOpenProfile, onNavigate }) => {
                 title="Best Practices"
               >
                 <BookIcon />
+              </button>
+              <button
+                onClick={onOpenReportProblem}
+                className="flex items-center justify-center text-brand-dark hover:bg-brand-dark/5 border border-brand-dark/20 transition-colors w-10 h-10 rounded-lg font-semibold"
+                title="Help & Support"
+              >
+                <HelpIcon />
               </button>
              <button
               onClick={onOpenProfile}

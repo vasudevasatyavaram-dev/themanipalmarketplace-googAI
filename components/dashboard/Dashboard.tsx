@@ -8,6 +8,7 @@ import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
 import VersionHistoryModal from './VersionHistoryModal';
 import ProfileModal from './ProfileModal';
+import ReportProblemModal from './ReportProblemModal';
 import ProductList from './ProductList';
 import Spinner from '../ui/Spinner';
 import Analytics from './Analytics';
@@ -34,6 +35,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isReportProblemModalOpen, setIsReportProblemModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [productForHistory, setProductForHistory] = useState<Product | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
@@ -58,7 +60,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   }, [fetchProducts]);
 
   useEffect(() => {
-    const isAnyModalOpen = isAddModalOpen || isEditModalOpen || isHistoryModalOpen || isProfileModalOpen;
+    const isAnyModalOpen = isAddModalOpen || isEditModalOpen || isHistoryModalOpen || isProfileModalOpen || isReportProblemModalOpen;
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -67,7 +69,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [isAddModalOpen, isEditModalOpen, isHistoryModalOpen, isProfileModalOpen]);
+  }, [isAddModalOpen, isEditModalOpen, isHistoryModalOpen, isProfileModalOpen, isReportProblemModalOpen]);
 
   const handleProductAdded = () => {
     const isFirstProduct = products.length === 0;
@@ -155,6 +157,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         user={session.user} 
         onOpenProfile={() => setIsProfileModalOpen(true)}
         onNavigate={setCurrentView} 
+        onOpenReportProblem={() => setIsReportProblemModalOpen(true)}
       />
       <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex-grow w-full">
         {currentView === 'dashboard' && (
@@ -248,6 +251,11 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
         session={session}
+      />
+      <ReportProblemModal
+        isOpen={isReportProblemModalOpen}
+        onClose={() => setIsReportProblemModalOpen(false)}
+        userId={session.user.id}
       />
     </div>
   );

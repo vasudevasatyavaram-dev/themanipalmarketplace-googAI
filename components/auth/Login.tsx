@@ -75,7 +75,11 @@ const Login: React.FC = () => {
             }
             setPageView('otp');
         } catch (error: any) {
-            setError(error.error_description || error.message);
+            if (error.message && error.message.toLowerCase().includes('rate limit')) {
+                setError('Too many requests. Please wait a minute before trying again.');
+            } else {
+                setError(error.error_description || error.message);
+            }
         } finally {
             setLoading(false);
         }
