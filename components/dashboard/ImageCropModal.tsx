@@ -83,7 +83,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
         </div>
         <div className="p-4 flex-grow overflow-y-auto">
           <p className="text-sm text-red-600/90 text-center mb-2 italic font-semibold">
-            Recommended crop is Square for consistency.
+            Recommended crop is <strong>Square</strong> for consistency.
           </p>
           <div className="flex justify-center gap-2 mb-4">
              {aspectPresets.map(preset => (
