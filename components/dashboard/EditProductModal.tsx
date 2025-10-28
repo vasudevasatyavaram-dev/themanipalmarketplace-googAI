@@ -220,6 +220,39 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     }, 0);
   };
 
+  const handleDescriptionKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        const textarea = e.currentTarget;
+        const { value, selectionStart } = textarea;
+
+        const lineStartIndex = value.lastIndexOf('\n', selectionStart - 1) + 1;
+        const currentLine = value.substring(lineStartIndex, selectionStart);
+
+        if (currentLine.trim().startsWith('•')) {
+            e.preventDefault();
+
+            if (currentLine.trim() === '•') {
+                const textBefore = value.substring(0, lineStartIndex);
+                const textAfter = value.substring(selectionStart);
+                const newValue = textBefore + textAfter;
+                setDescription(newValue);
+                setTimeout(() => {
+                    textarea.selectionStart = textarea.selectionEnd = lineStartIndex;
+                }, 0);
+            } else {
+                const textBefore = value.substring(0, selectionStart);
+                const textAfter = value.substring(selectionStart);
+                const newValue = `${textBefore}\n• ${textAfter}`;
+                setDescription(newValue);
+                setTimeout(() => {
+                    const newCursorPos = selectionStart + 3;
+                    textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+                }, 0);
+            }
+        }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -332,7 +365,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
                 <label htmlFor="description-edit" className="text-brand-dark/80 text-sm font-medium">Product Description <span className="text-red-500">*</span></label>
                 <button type="button" onClick={handleAddBulletPoint} className="text-xs font-semibold text-brand-accent hover:underline">Add Bullet Point</button>
               </div>
-              <textarea ref={descriptionRef} id="description-edit" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" rows={3} required></textarea>
+              <textarea ref={descriptionRef} id="description-edit" value={description} onChange={e => setDescription(e.target.value)} onKeyDown={handleDescriptionKeyDown} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" rows={3} required></textarea>
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div className="relative" ref={categoryRef}>
