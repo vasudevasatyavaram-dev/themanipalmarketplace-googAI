@@ -55,6 +55,19 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
     fetchProducts();
   }, [fetchProducts]);
 
+  useEffect(() => {
+    const isAnyModalOpen = isAddModalOpen || isEditModalOpen || isHistoryModalOpen || isProfileModalOpen;
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    // Cleanup function to ensure scroll is restored when component unmounts
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isAddModalOpen, isEditModalOpen, isHistoryModalOpen, isProfileModalOpen]);
+
   const handleProductAdded = () => {
     const isFirstProduct = products.length === 0;
     fetchProducts();
