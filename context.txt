@@ -201,3 +201,34 @@ To support product rentals, a new "Session" field has been added. This field all
 4.  **Database Integration:** The session information is stored in a new `session` column in the database, which is constrained to only accept values for rental items.
 
 This feature provides the necessary functionality for a rental marketplace while keeping the UI for standard "Buy" listings clean and uncluttered.
+
+---
+
+**UI Tweak: De-emphasize Product Delete Button**
+
+**Overview:**
+To improve the visual hierarchy and reduce the prominence of the destructive "Delete" action on product cards, its styling has been updated to be less conspicuous.
+
+**Behavior & Visual Change:**
+1.  **From Solid to Outline:** The "Delete" button no longer has a solid, bright red (`brand-accent`) background. It has been changed to a more subtle "outline" style.
+2.  **New Styling:** The button now has a transparent background with a `brand-accent` colored border and text. On hover, the background fills with the `brand-accent` color, and the text turns white, providing clear feedback without being overly dominant in its resting state.
+
+This change makes the "Edit" button the most visually neutral action, while the "Delete" button is clearly marked as a secondary, more dangerous option.
+
+---
+
+**Feature: Image Carousel on Product Cards**
+
+**Overview:**
+To improve the product viewing experience on the main dashboard, an image carousel has been added to the product cards. Sellers can now cycle through all uploaded images for a product directly from the product list.
+
+**Behavior & Visual Changes:**
+1.  **Carousel Functionality:** For products with more than one image, the image display area on the card now functions as a carousel.
+2.  **Navigation Arrows:**
+    *   When hovering over the image, left and right navigation arrows will appear on the sides.
+    *   Clicking these arrows allows the seller to cycle through the product's images. The carousel will loop, meaning clicking "next" on the last image will go to the first, and "previous" on the first image will go to the last.
+3.  **Page Indicators:**
+    *   Small dot indicators are now displayed at the bottom of the image area.
+    *   These dots show the total number of images available and highlight which one is currently being viewed.
+
+This feature is only active for products with multiple images, keeping the interface for single-image products clean and unchanged. This enhancement provides a richer, more interactive dashboard experience.

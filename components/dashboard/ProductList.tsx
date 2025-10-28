@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Product } from '../../types';
 
 interface ProductListProps {
@@ -17,6 +17,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, onHistory }) => {
   const isRejected = product.approval_status === 'rejected';
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const getStatusChipClass = (status: string) => {
     switch (status) {
@@ -29,16 +30,43 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
 
   const canEdit = product.approval_status === 'pending' && product.edit_count < 3;
 
+  const goToPrevious = () => {
+    const isFirstSlide = currentIndex === 0;
+    const newIndex = isFirstSlide ? product.image_url.length - 1 : currentIndex - 1;
+    setCurrentIndex(newIndex);
+  };
+
+  const goToNext = () => {
+    const isLastSlide = currentIndex === product.image_url.length - 1;
+    const newIndex = isLastSlide ? 0 : currentIndex + 1;
+    setCurrentIndex(newIndex);
+  };
+
   return (
     <div className="group">
       <div className={`bg-brand-cream rounded-xl flex flex-col shadow-lg transition-all duration-300 ease-in-out border border-brand-dark/10 overflow-hidden group-hover:shadow-2xl group-hover:-translate-y-1`}>
-        <div className={`w-full h-56 bg-white flex items-center justify-center p-2 relative group transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
+        <div className={`w-full h-56 bg-white flex items-center justify-center p-2 relative group/carousel transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
           {product.image_url?.length > 0 ? (
-            <img src={product.image_url[0]} alt={product.title} className="max-w-full max-h-full object-contain" />
+            <img src={product.image_url[currentIndex]} alt={product.title} className="max-w-full max-h-full object-contain" />
           ) : (
             <div className="w-full h-full bg-brand-light flex items-center justify-center">
               <span className="text-brand-dark/50">No Image</span>
             </div>
+          )}
+          {product.image_url?.length > 1 && (
+            <>
+              <button onClick={goToPrevious} className="absolute top-1/2 left-2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1.5 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 hover:bg-black/60 z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <button onClick={goToNext} className="absolute top-1/2 right-2 -translate-y-1/2 bg-black/40 text-white rounded-full p-1.5 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 hover:bg-black/60 z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {product.image_url.map((_, slideIndex) => (
+                  <div key={slideIndex} className={`w-2 h-2 rounded-full transition-all duration-300 ${currentIndex === slideIndex ? 'bg-brand-accent' : 'bg-gray-400/70'}`}></div>
+                ))}
+              </div>
+            </>
           )}
         </div>
         <div className="p-5 flex flex-col flex-grow">
@@ -106,7 +134,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                   <p className="text-xs text-brand-dark/60 mb-1 h-4"></p>
                   <button
                     onClick={() => onDelete(product)}
-                    className="w-full text-center bg-brand-accent text-white px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-accent/90 transition"
+                    className="w-full text-center bg-transparent border border-brand-accent text-brand-accent px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-accent hover:text-white transition"
                   >
                     Delete
                   </button>
