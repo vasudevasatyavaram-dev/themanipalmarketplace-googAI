@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import type { Product } from '../../types';
@@ -86,12 +87,13 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const [type, setType] = useState<'buy' | 'rent'>('buy');
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState('');
+  const [sessionString, setSessionString] = useState('');
   
   const [newImages, setNewImages] = useState<CroppedImage[]>([]);
   const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
   
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const categoryRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
@@ -111,6 +113,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
         setType(productToEdit.type as 'buy' | 'rent');
         setQuantity(productToEdit.quantity_left);
         setPrice(String(productToEdit.price));
+        setSessionString(productToEdit.session || '');
         setExistingImages(productToEdit.image_url.map((url, index) => ({ id: `existing-${index}-${url}`, url })));
         
         initialProductState.current = {
@@ -120,6 +123,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
             type: productToEdit.type as 'buy' | 'rent',
             quantity_left: productToEdit.quantity_left,
             price: Number(productToEdit.price),
+            session: productToEdit.session || null,
             image_urls_count: productToEdit.image_url.length,
         };
         
@@ -127,7 +131,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
         setNewImages([]);
         setFilesToCropQueue([]);
         setImageToCrop(null);
-        setError(null);
+        setErrors({});
         setIsDirty(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,12 +149,14 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
       quantity !== initialProductState.current.quantity_left ||
       price !== String(initialProductState.current.price) ||
       type !== initialProductState.current.type ||
+      (type === 'rent' && sessionString !== (initialProductState.current.session || '')) ||
+      (type === 'buy' && (initialProductState.current.session !== null)) ||
       JSON.stringify(sortedCategories) !== JSON.stringify(sortedInitialCategories) ||
       (existingImages.length + newImages.length) !== initialProductState.current.image_urls_count;
     
     setIsDirty(hasChanged);
 
-  }, [title, description, categories, type, quantity, price, newImages, existingImages, productToEdit]);
+  }, [title, description, categories, type, quantity, price, sessionString, newImages, existingImages, productToEdit]);
 
 
   const availableCategories = ["Books", "Tech and Gadgets", "Sports and Fitness", "Cycles, Bikes, etc", "Brand New", "Home & Kitchen Essentials", "Rent", "Other"];
@@ -167,20 +173,20 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   }, [filesToCropQueue, imageToCrop]);
 
   const handleFiles = (incomingFiles: File[]) => {
-    setError(null);
+    setErrors(prev => ({ ...prev, images: undefined }));
     if (existingImages.length + newImages.length + filesToCropQueue.length + incomingFiles.length > MAX_IMAGE_COUNT) {
-      setError(`You can only have a maximum of ${MAX_IMAGE_COUNT} images in total.`);
+      setErrors(prev => ({...prev, images: `You can only have a maximum of ${MAX_IMAGE_COUNT} images in total.`}));
       return;
     }
 
     const validFiles: File[] = [];
     for (const file of incomingFiles) {
       if (file.size > MAX_FILE_SIZE) {
-        setError(`File "${file.name}" exceeds the 12 MB size limit.`);
+        setErrors(prev => ({...prev, images: `File "${file.name}" exceeds the 12 MB size limit.`}));
         return;
       }
       if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-        setError(`File type for "${file.name}" is not supported.`);
+        setErrors(prev => ({...prev, images: `File type for "${file.name}" is not supported.`}));
         return;
       }
       validFiles.push(file);
@@ -323,10 +329,18 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setErrors({});
 
+    const newErrors: Record<string, string> = {};
     if (existingImages.length + newImages.length === 0) {
-      setError('Please upload at least one image.');
+      newErrors.images = 'Please upload at least one image.';
+    }
+    if (type === 'rent' && !sessionString.trim()) {
+      newErrors.session = 'Rental Session is required for rentals.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
     
@@ -356,6 +370,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
         quantity_left: quantity,
         price: parseFloat(price),
         image_url: finalImageUrls,
+        session: type === 'rent' ? sessionString.trim() : null,
         edit_count: productToEdit.edit_count + 1,
         quantity_sold: productToEdit.quantity_sold,
         approval_status: 'pending',
@@ -370,7 +385,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
       handleClose();
 
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setErrors({ form: err.message || 'An unexpected error occurred.' });
     } finally {
       setLoading(false);
     }
@@ -424,7 +439,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
                     </div>
                 </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                   <label htmlFor="quantity-edit" className="text-brand-dark/80 text-sm font-medium mb-1 block">Quantity <span className="text-red-500">*</span></label>
                   <input id="quantity-edit" type="number" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" min="1" required />
@@ -435,6 +450,14 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
               </div>
             </div>
 
+            {type === 'rent' && (
+              <div className="animate-fade-in-fast">
+                <label htmlFor="session-edit" className="text-brand-dark/80 text-sm font-medium mb-1 block">Rental Session <span className="text-red-500">*</span></label>
+                <input id="session-edit" type="text" placeholder="e.g., per night, per hour, per day" value={sessionString} onChange={e => setSessionString(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.session ? 'border-red-500' : 'border-gray-300'}`} required />
+                {errors.session && <p className="text-red-500 text-xs mt-1">{errors.session}</p>}
+              </div>
+            )}
+
             <div>
                 <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Images <span className="text-red-500">*</span></label>
                 <div
@@ -443,13 +466,14 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
                     onDragLeave={handleDragLeave}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                    className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300 hover:border-brand-accent/50'}`}
+                    className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300 hover:border-brand-accent/50'} ${errors.images ? 'border-red-500' : ''}`}
                 >
                     <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept={ALLOWED_MIME_TYPES.join(',')} className="hidden" disabled={existingImages.length + newImages.length >= MAX_IMAGE_COUNT}/>
                     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/80 mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                     <p className="text-brand-dark font-semibold">Drag & drop new images, or click to browse</p>
                     <p className="text-xs text-brand-dark/60 mt-1">Add up to 5 images total. Max 12MB each.</p>
                 </div>
+                {errors.images && <p className="text-red-500 text-sm text-center mt-2">{errors.images}</p>}
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4">
                     {existingImages.map((image) => (
                         <div key={image.id} className="relative group aspect-square bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -496,7 +520,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
                 </div>
             </div>
 
-            {error && <p className="text-red-500 text-sm text-center py-1">{error}</p>}
+            {errors.form && <p className="text-red-500 text-sm text-center py-1">{errors.form}</p>}
           </form>
           <div className="p-4 border-t border-brand-dark/10 flex justify-end gap-3">
               <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2.5 px-6 rounded-lg hover:bg-gray-300 transition">Cancel</button>

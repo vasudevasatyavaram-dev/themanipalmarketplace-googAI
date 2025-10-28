@@ -88,6 +88,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const [type, setType] = useState<'buy' | 'rent'>('buy');
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState('');
+  const [sessionString, setSessionString] = useState('');
   const [images, setImages] = useState<CroppedImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -220,6 +221,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     setType('buy');
     setQuantity(1);
     setPrice('');
+    setSessionString('');
     images.forEach(img => URL.revokeObjectURL(img.previewUrl));
     setImages([]);
     setFilesToCropQueue([]);
@@ -315,6 +317,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     if (!description.trim()) newErrors.description = 'Product Description is required.';
     if (quantity < 1) newErrors.quantity = 'Quantity must be at least 1.';
     if (!price || parseFloat(price) <= 0) newErrors.price = 'A valid price is required.';
+    if (type === 'rent' && !sessionString.trim()) newErrors.session = 'Rental Session is required for rentals.';
     if (images.length === 0) newErrors.images = 'At least one image is required.';
     
     if (Object.keys(newErrors).length > 0) {
@@ -359,6 +362,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
         quantity_left: quantity,
         price: parseFloat(price),
         image_url: uploadedImageUrls,
+        session: type === 'rent' ? sessionString.trim() : null,
       };
 
       const { error: insertError } = await supabase.from('products').insert(productData);
@@ -442,6 +446,14 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                   {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity}</p>}
               </div>
             </div>
+
+            {type === 'rent' && (
+              <div className="animate-fade-in-fast">
+                <label htmlFor="session" className="text-brand-dark/80 text-sm font-medium mb-1 block">Rental Session <span className="text-red-500">*</span></label>
+                <input id="session" type="text" placeholder="e.g., per night, per hour, per day" value={sessionString} onChange={e => setSessionString(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.session ? 'border-red-500' : 'border-gray-300'}`} required />
+                {errors.session && <p className="text-red-500 text-xs mt-1">{errors.session}</p>}
+              </div>
+            )}
             
              <div>
                 <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Images <span className="text-red-500">*</span></label>

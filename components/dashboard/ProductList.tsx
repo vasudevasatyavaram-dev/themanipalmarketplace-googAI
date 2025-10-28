@@ -64,7 +64,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
               {product.category && product.category.length > 0 && (
                   <p><span className="font-semibold">Category:</span> {product.category.join(', ')}</p>
               )}
-               <p><span className="font-semibold">List Price:</span> ₹{product.price}</p>
+               <p>
+                <span className="font-semibold">{product.type === 'rent' ? 'Rental Price:' : 'List Price:'}</span>
+                {' '}₹{product.price}{product.type === 'rent' && product.session && ` / ${product.session}`}
+               </p>
           </div>
           
           <p className={`text-brand-dark/70 text-sm mb-4 flex-grow transition-opacity whitespace-pre-wrap ${isRejected ? 'opacity-50' : ''}`}>{product.description}</p>

@@ -1,4 +1,5 @@
 
+
 export type Json =
   | string
   | number
@@ -29,6 +30,7 @@ export interface Database {
           edit_count: number
           reject_explanation: string | null
           product_group_id: string
+          session: string | null
         }
         Insert: {
           approval_status?: string
@@ -48,6 +50,7 @@ export interface Database {
           edit_count?: number
           reject_explanation?: string | null
           product_group_id?: string
+          session?: string | null
         }
         Update: {
           approval_status?: string
@@ -67,6 +70,7 @@ export interface Database {
           edit_count?: number
           reject_explanation?: string | null
           product_group_id?: string
+          session?: string | null
         }
         Relationships: [
           {

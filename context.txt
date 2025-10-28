@@ -186,3 +186,18 @@ The temporary "preview mode," which used a mock user session to bypass the login
 3.  **Secure Access:** The seller dashboard is now protected and can only be accessed by authenticated users.
 
 This change moves the application from a development preview state to a production-ready state with a fully functional and secure authentication system.
+
+---
+
+**Feature: Rental Session Field**
+
+**Overview:**
+To support product rentals, a new "Session" field has been added. This field allows sellers to specify the duration or unit for which a rental price applies (e.g., "per night," "per hour").
+
+**Behavior & UI Changes:**
+1.  **Conditional Field:** In both the "Add Product" and "Edit Product" forms, a new text input for "Rental Session" will now appear. This field is only visible when the product "Type" is set to "Rent."
+2.  **Required for Rentals:** This field is mandatory for all rental listings.
+3.  **Product Card Display:** On the main dashboard, the product cards for rental items will now display the price along with its session (e.g., "Rental Price: ₹1500 / per night"), providing clear information to the seller.
+4.  **Database Integration:** The session information is stored in a new `session` column in the database, which is constrained to only accept values for rental items.
+
+This feature provides the necessary functionality for a rental marketplace while keeping the UI for standard "Buy" listings clean and uncluttered.
