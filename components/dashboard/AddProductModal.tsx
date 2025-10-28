@@ -26,7 +26,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const [price, setPrice] = useState('');
   const [images, setImages] = useState<ImageFile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const categoryRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
@@ -52,20 +52,25 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   }, [filesToCrop, croppingImage]);
 
   const handleFiles = (incomingFiles: File[]) => {
-    setError(null);
+    setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.images;
+        return newErrors;
+    });
+
     if (images.length + filesToCrop.length + incomingFiles.length > MAX_IMAGE_COUNT) {
-      setError(`You can only upload a maximum of ${MAX_IMAGE_COUNT} images.`);
+      setErrors(prev => ({...prev, images: `You can only upload a maximum of ${MAX_IMAGE_COUNT} images.`}));
       return;
     }
 
     const validFiles: File[] = [];
     for (const file of incomingFiles) {
       if (file.size > MAX_FILE_SIZE) {
-        setError(`File "${file.name}" exceeds the 12 MB size limit.`);
+        setErrors(prev => ({...prev, images: `File "${file.name}" exceeds the 12 MB size limit.`}));
         return;
       }
       if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-        setError(`File type for "${file.name}" is not supported.`);
+        setErrors(prev => ({...prev, images: `File type for "${file.name}" is not supported.`}));
         return;
       }
       validFiles.push(file);
@@ -138,7 +143,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     setImages([]);
     setFilesToCrop([]);
     setCroppingImage(null);
-    setError(null);
+    setErrors({});
   }, [images]);
 
   const handleClose = () => {
@@ -220,10 +225,17 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setErrors({});
 
-    if (!title.trim() || !description.trim() || quantity < 1 || !price || parseFloat(price) <= 0 || images.length === 0) {
-      setError('Please fill all required fields, including at least one image.');
+    const newErrors: Record<string, string> = {};
+    if (!title.trim()) newErrors.title = 'Product Title is required.';
+    if (!description.trim()) newErrors.description = 'Product Description is required.';
+    if (quantity < 1) newErrors.quantity = 'Quantity must be at least 1.';
+    if (!price || parseFloat(price) <= 0) newErrors.price = 'A valid price is required.';
+    if (images.length === 0) newErrors.images = 'At least one image is required.';
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -270,7 +282,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
       handleClose();
 
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setErrors({ form: err.message || 'An unexpected error occurred.' });
     } finally {
       setLoading(false);
     }
@@ -294,13 +306,14 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                 onDragLeave={handleDragLeave}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300 hover:border-brand-accent/50'}`}
+                className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300 hover:border-brand-accent/50'} ${errors.images ? 'border-red-500' : ''}`}
             >
               <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept={ALLOWED_MIME_TYPES.join(',')} className="hidden" disabled={images.length >= MAX_IMAGE_COUNT}/>
               <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/80 mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
               <p className="text-brand-dark font-semibold">Drag & drop images here, or click to browse</p>
               <p className="text-xs text-brand-dark/60 mt-1">Add up to 5 images. Max 12MB each.</p>
             </div>
+            {errors.images && <p className="text-red-500 text-sm text-center -mt-2 pb-2">{errors.images}</p>}
             {images.length > 0 && (
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                     {images.map((image) => (
@@ -318,7 +331,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             
             <div>
               <label htmlFor="title" className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Title <span className="text-red-500">*</span></label>
-              <input id="title" type="text" placeholder="e.g., Apple AirPods Pro (2nd Gen)" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" required />
+              <input id="title" type="text" placeholder="e.g., Apple AirPods Pro (2nd Gen)" value={title} onChange={e => setTitle(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.title ? 'border-red-500' : 'border-gray-300'}`} required />
+              {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
             </div>
             
             <div>
@@ -326,7 +340,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                     <label htmlFor="description" className="text-brand-dark/80 text-sm font-medium">Product Description <span className="text-red-500">*</span></label>
                     <button type="button" onClick={handleAddBulletPoint} className="text-xs font-semibold text-brand-accent hover:underline">Add Bullet Point</button>
                 </div>
-              <textarea ref={descriptionRef} id="description" placeholder="Describe the item's condition, features, and any other relevant details." value={description} onChange={e => setDescription(e.target.value)} onKeyDown={handleDescriptionKeyDown} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" rows={3} required></textarea>
+              <textarea ref={descriptionRef} id="description" placeholder="Describe the item's condition, features, and any other relevant details." value={description} onChange={e => setDescription(e.target.value)} onKeyDown={handleDescriptionKeyDown} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.description ? 'border-red-500' : 'border-gray-300'}`} rows={3} required></textarea>
+              {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -361,15 +376,17 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="price" className="text-brand-dark/80 text-sm font-medium mb-1 block">Price (₹) <span className="text-red-500">*</span></label>
-                <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" min="1" required />
+                <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.price ? 'border-red-500' : 'border-gray-300'}`} min="1" required />
+                {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
               </div>
               <div>
                   <label htmlFor="quantity" className="text-brand-dark/80 text-sm font-medium mb-1 block">Quantity <span className="text-red-500">*</span></label>
-                  <input id="quantity" type="number" placeholder="e.g. 1" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" min="1" required />
+                  <input id="quantity" type="number" placeholder="e.g. 1" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`} min="1" required />
+                  {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity}</p>}
               </div>
             </div>
             
-            {error && <p className="text-red-500 text-sm text-center py-1">{error}</p>}
+            {errors.form && <p className="text-red-500 text-sm text-center py-1">{errors.form}</p>}
           </form>
           <div className="p-4 border-t border-brand-dark/10 flex justify-end gap-3 sticky bottom-0 bg-brand-light">
               <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2.5 px-6 rounded-lg hover:bg-gray-300 transition">Cancel</button>
