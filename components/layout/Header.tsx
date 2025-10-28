@@ -20,9 +20,12 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold text-brand-dark">
+            <h1 className="text-2xl font-bold text-brand-dark leading-tight">
                 Seller Dashboard
             </h1>
+            <p className="text-xs text-brand-dark/60 tracking-wider">
+                • the manipal marketplace •
+            </p>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-brand-dark/80 hidden sm:block">{user.email || user.phone}</span>

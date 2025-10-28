@@ -99,7 +99,10 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
     }
   };
   
-  const totalQuantity = products.reduce((sum, p) => sum + p.quantity_left, 0);
+  const totalQuantity = products
+    .filter(p => p.approval_status !== 'rejected')
+    .reduce((sum, p) => sum + p.quantity_left, 0);
+
   const totalSold = products.reduce((sum, p) => sum + p.quantity_sold, 0);
 
   return (
