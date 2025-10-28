@@ -28,6 +28,7 @@ export interface Database {
           user_id: string
           edit_count: number
           reject_explanation: string | null
+          product_group_id: string
         }
         Insert: {
           approval_status?: string
@@ -46,6 +47,7 @@ export interface Database {
           user_id: string
           edit_count?: number
           reject_explanation?: string | null
+          product_group_id?: string
         }
         Update: {
           approval_status?: string
@@ -64,6 +66,7 @@ export interface Database {
           user_id?: string
           edit_count?: number
           reject_explanation?: string | null
+          product_group_id?: string
         }
         Relationships: [
           {
@@ -80,7 +83,12 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_latest_products_for_user: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: Database["public"]["Tables"]["products"]["Row"][]
+      }
     }
     Enums: {
       [_ in never]: never

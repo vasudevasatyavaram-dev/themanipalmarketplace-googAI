@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import type { Product } from '../../types';
@@ -47,7 +48,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const [croppingImage, setCroppingImage] = useState<{ id: string; preview: string } | null>(null);
 
   const [isDirty, setIsDirty] = useState(false);
-  const initialProductState = useRef<{ title: string; description: string; category: string[]; type: "buy" | "rent"; quantity_left: number; price: string; } | null>(null);
+  const initialProductState = useRef<Partial<Product> | null>(null);
 
   useEffect(() => {
     if (productToEdit) {
@@ -65,7 +66,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
             category: productToEdit.category || [],
             type: productToEdit.type as 'buy' | 'rent',
             quantity_left: productToEdit.quantity_left,
-            price: String(productToEdit.price),
+            price: Number(productToEdit.price),
         };
         
         newImages.forEach(img => URL.revokeObjectURL(img.preview));
@@ -83,13 +84,13 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     if (!productToEdit || !initialProductState.current) return;
 
     const sortedCategories = [...categories].sort();
-    const sortedInitialCategories = [...initialProductState.current.category].sort();
+    const sortedInitialCategories = [...(initialProductState.current.category || [])].sort();
 
     const hasChanged = 
       title !== initialProductState.current.title ||
       description !== initialProductState.current.description ||
       quantity !== initialProductState.current.quantity_left ||
-      price !== initialProductState.current.price ||
+      price !== String(initialProductState.current.price) ||
       type !== initialProductState.current.type ||
       JSON.stringify(sortedCategories) !== JSON.stringify(sortedInitialCategories) ||
       newImages.length > 0 ||
@@ -265,13 +266,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     setLoading(true);
 
     try {
-      if (imagesToDelete.length > 0) {
-        const filePaths = imagesToDelete.map(url => url.split('/product_images/')[1]).filter(Boolean);
-        if (filePaths.length > 0) {
-            const { error: deleteError } = await supabase.storage.from('product_images').remove(filePaths);
-            if (deleteError) throw deleteError;
-        }
-      }
+      // Note: We don't delete old images because the old version might be reverted to.
+      // A cleanup job could handle orphaned images later if needed.
 
       const sanitizedTitle = title.trim().replace(/\s+/g, '_').replace(/[^\w-]/g, '');
       const uploadPromises = newImages.map(async (imageFile, index) => {
@@ -285,7 +281,10 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
       
       const finalImageUrls = [...existingImages.map(img => img.url), ...newImageUrls];
       
-      const productUpdateData: Partial<Product> = {
+      // Create a new product entry for the new version
+      const newProductVersion = {
+        product_group_id: productToEdit.product_group_id, // Link to the original product
+        user_id: userId,
         title,
         description,
         category: categories.length > 0 ? categories : null,
@@ -293,14 +292,15 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
         quantity_left: quantity,
         price: parseFloat(price),
         image_url: finalImageUrls,
+        edit_count: productToEdit.edit_count + 1,
+        quantity_sold: productToEdit.quantity_sold, // Carry over sold count
+        approval_status: 'pending', // Reset for re-approval
+        product_status: 'available',
+        reject_explanation: null,
       };
 
-      if (isDirty) {
-        productUpdateData.edit_count = productToEdit.edit_count + 1;
-      }
-
-      const { error: updateError } = await supabase.from('products').update(productUpdateData).eq('id', productToEdit.id);
-      if (updateError) throw updateError;
+      const { error: insertError } = await supabase.from('products').insert(newProductVersion);
+      if (insertError) throw insertError;
       
       onProductEdited();
       handleClose();
@@ -319,7 +319,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
       <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-2 sm:p-4">
         <div className="bg-brand-light border border-brand-dark/10 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] flex flex-col">
           <div className="p-5 border-b border-brand-dark/10 flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-brand-dark">Edit Product</h2>
+            <h2 className="text-2xl font-bold text-brand-dark">Edit Product (Version {productToEdit.edit_count + 1})</h2>
             <button onClick={handleClose} className="text-brand-dark/70 hover:text-brand-dark text-3xl leading-none">&times;</button>
           </div>
           <form id="edit-product-form" onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-grow">
@@ -408,7 +408,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
           <div className="p-4 border-t border-brand-dark/10 flex justify-end gap-3">
               <button type="button" onClick={handleClose} className="bg-gray-200 text-gray-800 font-bold py-2.5 px-6 rounded-lg hover:bg-gray-300 transition">Cancel</button>
               <button type="submit" form="edit-product-form" disabled={loading || !isDirty} className="bg-brand-accent text-white font-bold py-2.5 px-6 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[140px]">
-                {loading ? <Spinner /> : 'Save Changes'}
+                {loading ? <Spinner /> : 'Save as New Version'}
               </button>
           </div>
         </div>

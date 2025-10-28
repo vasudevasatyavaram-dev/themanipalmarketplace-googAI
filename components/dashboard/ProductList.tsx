@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Product } from '../../types';
 
@@ -5,15 +6,17 @@ interface ProductListProps {
   products: Product[];
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
+  onHistory: (product: Product) => void;
 }
 
 interface ProductCardProps {
   product: Product;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
+  onHistory: (product: Product) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, onHistory }) => {
   const isRejected = product.approval_status === 'rejected';
 
   const getStatusChipClass = (status: string) => {
@@ -72,7 +75,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) 
                 <p>Qty Sold: <span className="font-bold text-brand-dark">{product.quantity_sold}</span></p>
             </div>
             <div className="flex items-end gap-2">
-              <div className={`flex-1 text-center transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
+              <div className={`flex flex-col text-center transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
                 {canEdit && (
                   <p className="text-xs text-brand-dark/60 mb-1">
                     {3 - product.edit_count} {3 - product.edit_count === 1 ? 'edit' : 'edits'} left
@@ -87,7 +90,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) 
                   Edit
                 </button>
               </div>
-              <div className="flex-1">
+               {product.edit_count > 0 && !isRejected && (
+                 <div className="flex flex-col text-center flex-1">
+                    <p className="text-xs text-brand-dark/60 mb-1 h-4"></p>
+                    <button 
+                        onClick={() => onHistory(product)}
+                        className="w-full text-center bg-white border border-brand-dark/50 text-brand-dark px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition"
+                    >
+                        History
+                    </button>
+                 </div>
+               )}
+              <div className="flex flex-col text-center flex-1">
+                <p className="text-xs text-brand-dark/60 mb-1 h-4"></p>
                 <button
                   onClick={() => onDelete(product)}
                   className="w-full text-center bg-brand-accent text-white px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-accent/90 transition"
@@ -97,13 +112,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete }) 
               </div>
             </div>
         </div>
-
       </div>
     </div>
   );
 };
 
-const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete }) => {
+const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete, onHistory }) => {
   if (products.length === 0) {
     return (
       <div className="text-center py-16 px-6 bg-brand-cream rounded-xl border-2 border-dashed border-brand-dark/10">
@@ -116,7 +130,7 @@ const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete })
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} onEdit={onEdit} onDelete={onDelete}/>
+        <ProductCard key={product.id} product={product} onEdit={onEdit} onDelete={onDelete} onHistory={onHistory}/>
       ))}
     </div>
   );

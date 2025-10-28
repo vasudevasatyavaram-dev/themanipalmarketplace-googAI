@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../services/supabase';
 import type { Session } from '@supabase/supabase-js';
@@ -5,6 +6,7 @@ import type { Product } from '../../types';
 import Header from '../layout/Header';
 import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
+import VersionHistoryModal from './VersionHistoryModal';
 import ProductList from './ProductList';
 import Spinner from '../ui/Spinner';
 import Analytics from './Analytics';
@@ -27,21 +29,21 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const [productForHistory, setProductForHistory] = useState<Product | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false });
+    const { data, error } = await supabase.rpc('get_latest_products_for_user', {
+      p_user_id: session.user.id
+    });
 
     if (error) {
       setError(error.message);
     } else if (data) {
-      setProducts(data);
+      setProducts(data as Product[]);
     }
     setLoading(false);
   }, [session.user.id]);
@@ -67,20 +69,41 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
     setIsEditModalOpen(false);
     setProductToEdit(null);
   };
+  
+  const handleHistoryReverted = () => {
+    fetchProducts();
+    setIsHistoryModalOpen(false);
+    setProductForHistory(null);
+  };
 
   const openEditModal = (product: Product) => {
     setProductToEdit(product);
     setIsEditModalOpen(true);
   };
+  
+  const openHistoryModal = (product: Product) => {
+    setProductForHistory(product);
+    setIsHistoryModalOpen(true);
+  };
 
   const handleDeleteProduct = async (product: Product) => {
-    if (window.confirm(`Are you sure you want to delete "${product.title}"? This action cannot be undone.`)) {
-      // 1. Delete images from storage
-      if (product.image_url && product.image_url.length > 0) {
-        const filePaths = product.image_url.map(url => {
-          const parts = url.split('/product_images/');
-          return parts[1];
-        }).filter(Boolean);
+    if (window.confirm(`Are you sure you want to delete all versions of "${product.title}"? This action cannot be undone.`)) {
+      // 1. Get all versions to delete images
+      const { data: allVersions, error: fetchError } = await supabase
+        .from('products')
+        .select('image_url')
+        .eq('product_group_id', product.product_group_id);
+
+      if (fetchError) {
+        setError(fetchError.message);
+        return;
+      }
+      
+      // 2. Delete all images from storage
+      const allImageUrls = allVersions.flatMap(p => p.image_url);
+      if (allImageUrls.length > 0) {
+        const uniqueUrls = [...new Set(allImageUrls)];
+        const filePaths = uniqueUrls.map(url => url.split('/product_images/')[1]).filter(Boolean);
 
         if (filePaths.length > 0) {
           const { error: storageError } = await supabase.storage.from('product_images').remove(filePaths);
@@ -92,14 +115,17 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         }
       }
       
-      // 2. Delete product from database
-      const { error: dbError } = await supabase.from('products').delete().eq('id', product.id);
+      // 3. Delete all product versions from database
+      const { error: dbError } = await supabase
+        .from('products')
+        .delete()
+        .eq('product_group_id', product.product_group_id);
 
       if (dbError) {
         setError(dbError.message);
       } else {
-        // 3. Refresh product list
-        setProducts(products.filter(p => p.id !== product.id));
+        // 4. Refresh product list
+        setProducts(products.filter(p => p.product_group_id !== product.product_group_id));
       }
     }
   };
@@ -165,7 +191,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
           <p className="text-center text-red-500">{error}</p>
         ) : (
           <>
-            <ProductList products={products} onEdit={openEditModal} onDelete={handleDeleteProduct} />
+            <ProductList products={products} onEdit={openEditModal} onDelete={handleDeleteProduct} onHistory={openHistoryModal} />
             <Analytics products={products} />
           </>
         )}
@@ -183,6 +209,14 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
             onProductEdited={handleProductEdited}
             userId={session.user.id}
             productToEdit={productToEdit}
+        />
+      )}
+      {productForHistory && (
+        <VersionHistoryModal
+            isOpen={isHistoryModalOpen}
+            onClose={() => { setIsHistoryModalOpen(false); setProductForHistory(null); }}
+            product={productForHistory}
+            onReverted={handleHistoryReverted}
         />
       )}
     </div>
