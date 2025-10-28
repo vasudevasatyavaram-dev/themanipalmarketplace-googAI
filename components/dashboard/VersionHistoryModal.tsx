@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../services/supabase';
 import type { Product } from '../../types';
@@ -123,7 +124,10 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
                   </div>
                   <div className="mt-3 pt-3 border-t border-brand-dark/10 text-sm space-y-1">
                     <p><span className="font-semibold">Title:</span> {version.title}</p>
-                    <p><span className="font-semibold">Price:</span> ₹{version.price}</p>
+                    <p>
+                        <span className="font-semibold">{version.type === 'rent' ? 'Rental Price:' : 'Price:'}</span>
+                        {' '}₹{version.price}{version.type === 'rent' && version.session && ` / ${version.session}`}
+                    </p>
                     <p className="whitespace-pre-wrap"><span className="font-semibold">Description:</span> {version.description}</p>
                   </div>
                 </div>

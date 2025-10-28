@@ -232,3 +232,13 @@ To improve the product viewing experience on the main dashboard, an image carous
     *   These dots show the total number of images available and highlight which one is currently being viewed.
 
 This feature is only active for products with multiple images, keeping the interface for single-image products clean and unchanged. This enhancement provides a richer, more interactive dashboard experience.
+
+---
+
+**UI Tweak: Display Session in Version History**
+
+**Overview:**
+To maintain consistency with the main product list, the Version History modal has been updated to display the rental session information for products listed for rent.
+
+**Behavior & Visual Change:**
+- In the details section for each version, if a product is a rental, the price will now be displayed along with its session (e.g., "Rental Price: ₹1500 / per night"). This ensures that sellers have a complete view of their product's history, including rental terms.
