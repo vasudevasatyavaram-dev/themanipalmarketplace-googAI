@@ -199,7 +199,7 @@ const Login: React.FC = () => {
                 <div className="inline-block">
                     <StoreIcon />
                 </div>
-                <h1 className="mt-4 text-lg sm:text-xl font-bold text-brand-dark tracking-wider whitespace-nowrap">
+                <h1 className="mt-4 text-lg sm:text-xl font-bold text-brand-dark tracking-wider">
                     • the manipal marketplace •
                 </h1>
                 <p className="mt-1 text-md text-brand-dark/70">

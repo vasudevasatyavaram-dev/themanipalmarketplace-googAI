@@ -117,10 +117,14 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         return;
       }
       
-      const allImageUrls = allVersions.flatMap(p => p.image_url);
+      const allImageUrls = allVersions?.flatMap(p => p.image_url) || [];
       if (allImageUrls.length > 0) {
         const uniqueUrls = [...new Set(allImageUrls)];
-        const filePaths = uniqueUrls.map(url => url.split('/product_images/')[1]).filter(Boolean);
+        // FIX: Property 'split' does not exist on type 'unknown'. Added a type guard to ensure `url` is a string.
+        const filePaths = uniqueUrls
+          .filter((url): url is string => typeof url === 'string')
+          .map(url => url.split('/product_images/')[1])
+          .filter(Boolean);
 
         if (filePaths.length > 0) {
           const { error: storageError } = await supabase.storage.from('product_images').remove(filePaths);
@@ -183,22 +187,22 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
                   </div>
               )}
               
-              <div className="flex overflow-x-auto md:grid md:grid-cols-3 gap-6 mb-8 pb-4 md:pb-0">
-                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10">
                       <div className="flex justify-between items-start">
                         <h3 className="text-brand-dark/70 text-sm font-medium">Total Products</h3>
                         <PackageIcon />
                       </div>
                       <p className="text-4xl font-bold text-brand-dark mt-2">{products.length}</p>
                   </div>
-                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
+                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10">
                       <div className="flex justify-between items-start">
                           <h3 className="text-brand-dark/70 text-sm font-medium">Total Items in Stock</h3>
                           <InventoryIcon />
                       </div>
                       <p className="text-4xl font-bold text-brand-dark mt-2">{totalQuantity}</p>
                   </div>
-                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
+                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10">
                       <div className="flex justify-between items-start">
                           <h3 className="text-brand-dark/70 text-sm font-medium">Total Items Sold</h3>
                           <SalesIcon />

@@ -75,7 +75,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                   <p>Qty Sold: <span className="font-bold text-brand-dark">{product.quantity_sold}</span></p>
               </div>
               <div className="flex items-end gap-2">
-                <div className={`flex flex-col text-center w-1/3 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
+                <div className={`flex flex-col text-center flex-1 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
                   <p className="text-xs text-brand-dark/60 mb-1 h-4">
                     {canEdit && `${3 - product.edit_count} ${3 - product.edit_count === 1 ? 'edit' : 'edits'} left`}
                   </p>
@@ -89,7 +89,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                   </button>
                 </div>
                  {product.edit_count > 0 && (
-                   <div className={`flex flex-col text-center w-1/3 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
+                   <div className={`flex flex-col text-center flex-1 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
                       <p className="text-xs text-brand-dark/60 mb-1 h-4"></p>
                       <button 
                           onClick={() => onHistory(product)}
@@ -99,7 +99,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                       </button>
                    </div>
                  )}
-                <div className="flex flex-col text-center w-1/3">
+                <div className="flex flex-col text-center flex-1">
                   <p className="text-xs text-brand-dark/60 mb-1 h-4"></p>
                   <button
                     onClick={() => onDelete(product)}
