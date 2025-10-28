@@ -254,3 +254,16 @@ To create a clearer and more intuitive workflow for sellers, the action buttons 
 1.  **Hide Buttons for Approved Products:** The "Edit" and "History" buttons are no longer visible on product cards where the `approval_status` is 'approved'. This clarifies that approved listings are live and cannot be directly modified.
 2.  **Enable Editing for Rejected Products:** Sellers can now click "Edit" on a rejected product. This allows them to correct any issues based on rejection feedback and resubmit the product for approval.
 3.  **Dynamic Button Layout:** The button container now uses a flexible layout, so the buttons automatically and evenly share the available space. This ensures the layout always looks balanced and professional, whether one, two, or three buttons are visible.
+
+---
+**UI/UX Improvement: Rejected Product Workflow**
+
+**Overview:**
+To improve the seller's experience when dealing with rejected products, several UI and functional refinements have been made. These changes provide clearer instructions and prevent users from reverting to a known problematic state.
+
+**Behavior & Visual Changes:**
+1.  **"Resubmit" Button:** On the main product list, the action button for a rejected product, which was previously labeled "Edit," has been renamed to **"Resubmit."** This makes the intended action much clearer to the user. The functionality remains the same—it opens the edit modal, allowing the seller to make corrections and submit a new version.
+2.  **Version History Refinement:** In the "Version History" modal:
+    *   Any version that was rejected is now visually de-emphasized with a reduced opacity ("dulled out").
+    *   A "Rejected" status badge has been added next to the version number for clarity.
+    *   The **"Revert to this version"** button is now disabled for any rejected version. This prevents sellers from accidentally reverting their product to a state that has already failed the approval process.

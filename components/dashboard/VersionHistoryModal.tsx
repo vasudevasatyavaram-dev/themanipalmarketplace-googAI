@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../services/supabase';
 import type { Product } from '../../types';
@@ -61,10 +59,6 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
             if (deleteError) throw deleteError;
         }
         
-        // Note: Images for deleted versions are kept in storage in case the user
-        // made a mistake and wants to re-upload them. A separate cleanup
-        // process could handle orphaned images if necessary.
-        
         onReverted();
 
       } catch (err: any) {
@@ -103,35 +97,41 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
             <p className="text-center text-red-500">{error}</p>
           ) : (
             <div className="space-y-4">
-              {versions.map((version, index) => (
-                <div key={version.id} className={`p-4 rounded-lg border transition-all ${index === 0 ? 'bg-brand-cream border-brand-accent/50 shadow' : 'bg-white border-gray-200'}`}>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                    <div>
-                      <h3 className="font-bold text-lg text-brand-dark">
-                        Version {version.edit_count} 
-                        {index === 0 && <span className="text-sm font-semibold text-brand-accent ml-2">(Latest)</span>}
-                      </h3>
-                      <p className="text-xs text-brand-dark/60 mt-1">Created on: {formatDate(version.created_at)}</p>
+              {versions.map((version, index) => {
+                const isRejected = version.approval_status === 'rejected';
+                return (
+                  <div key={version.id} className={`p-4 rounded-lg border transition-all ${isRejected ? 'opacity-60 bg-red-50 border-red-200' : (index === 0 ? 'bg-brand-cream border-brand-accent/50 shadow' : 'bg-white border-gray-200')}`}>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                      <div>
+                        <h3 className="font-bold text-lg text-brand-dark flex items-center">
+                          Version {version.edit_count} 
+                          {index === 0 && <span className="text-sm font-semibold text-brand-accent ml-2">(Latest)</span>}
+                          {isRejected && <span className="text-xs font-semibold text-red-800 bg-red-100 px-2 py-0.5 rounded-full ml-2">Rejected</span>}
+                        </h3>
+                        <p className="text-xs text-brand-dark/60 mt-1">Created on: {formatDate(version.created_at)}</p>
+                      </div>
+                      {index > 0 && (
+                        <button 
+                          onClick={() => handleRevert(version)}
+                          disabled={isRejected}
+                          className="mt-3 sm:mt-0 bg-white border border-brand-dark/50 text-brand-dark px-4 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={isRejected ? "Cannot revert to a rejected version" : ""}
+                        >
+                          Revert to this version
+                        </button>
+                      )}
                     </div>
-                    {index > 0 && (
-                      <button 
-                        onClick={() => handleRevert(version)}
-                        className="mt-3 sm:mt-0 bg-white border border-brand-dark/50 text-brand-dark px-4 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition"
-                      >
-                        Revert to this version
-                      </button>
-                    )}
+                    <div className="mt-3 pt-3 border-t border-brand-dark/10 text-sm space-y-1">
+                      <p><span className="font-semibold">Title:</span> {version.title}</p>
+                      <p>
+                          <span className="font-semibold">{version.type === 'rent' ? 'Rental Price:' : 'Price:'}</span>
+                          {' '}₹{version.price}{version.type === 'rent' && version.session && ` / ${version.session}`}
+                      </p>
+                      <p className="whitespace-pre-wrap"><span className="font-semibold">Description:</span> {version.description}</p>
+                    </div>
                   </div>
-                  <div className="mt-3 pt-3 border-t border-brand-dark/10 text-sm space-y-1">
-                    <p><span className="font-semibold">Title:</span> {version.title}</p>
-                    <p>
-                        <span className="font-semibold">{version.type === 'rent' ? 'Rental Price:' : 'Price:'}</span>
-                        {' '}₹{version.price}{version.type === 'rent' && version.session && ` / ${version.session}`}
-                    </p>
-                    <p className="whitespace-pre-wrap"><span className="font-semibold">Description:</span> {version.description}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
