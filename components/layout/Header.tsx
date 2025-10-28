@@ -31,12 +31,12 @@ const Header: React.FC<HeaderProps> = ({ user, onOpenProfile, onNavigate }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <button onClick={() => onNavigate('dashboard')} className="flex-shrink-0 text-left">
-            <h2 className="text-2xl font-bold text-brand-dark leading-tight">
+            <h3 className="text-2xl font-bold text-brand-dark leading-tight">
                 Seller Dashboard
-            </h2>
-            <h4 className="text-xs text-brand-dark/60 tracking-wider">
+            </h3>
+            <h3 className="text-xs text-brand-dark/60 tracking-wider">
                 • the manipal marketplace •
-            </h4>
+            </h3>
           </button>
           <div className="flex items-center gap-2 sm:gap-4">
             <span className="text-brand-dark/80 hidden sm:block font-medium text-sm truncate max-w-[200px]">{user.email || user.phone}</span>
