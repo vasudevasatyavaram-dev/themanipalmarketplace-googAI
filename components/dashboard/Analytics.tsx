@@ -9,6 +9,10 @@ interface AnalyticsProps {
     products: Product[];
 }
 
+const LockIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-dark mb-4"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+);
+
 const Analytics: React.FC<AnalyticsProps> = ({ products }) => {
     
     const soldProducts = useMemo(() => products.filter(p => p.quantity_sold > 0), [products]);
@@ -23,7 +27,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ products }) => {
         const top5 = sortedProducts.slice(0, 5);
 
         return {
-            labels: top5.map(p => p.title),
+            labels: top5.map(p => p.title.length > 15 ? p.title.substring(0, 15) + '...' : p.title),
             datasets: [{
                 label: 'Total Revenue (₹)',
                 data: top5.map(p => p.revenue),
@@ -72,13 +76,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ products }) => {
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                position: 'top' as const,
-                labels: {
-                    color: '#3D081B',
-                    font: {
-                        family: 'Poppins, sans-serif'
-                    }
-                }
+                display: false,
             },
             title: {
                 display: false,
@@ -102,6 +100,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ products }) => {
                 }
             },
             y: {
+                beginAtZero: true,
                 ticks: {
                     color: '#3D081B',
                     font: {
@@ -125,7 +124,9 @@ const Analytics: React.FC<AnalyticsProps> = ({ products }) => {
                     color: '#3D081B',
                     font: {
                         family: 'Poppins, sans-serif'
-                    }
+                    },
+                    boxWidth: 20,
+                    padding: 15,
                 }
             },
             title: {
@@ -141,9 +142,28 @@ const Analytics: React.FC<AnalyticsProps> = ({ products }) => {
 
     if (soldProducts.length === 0) {
         return (
-             <div className="mt-10 text-center py-16 px-6 bg-brand-cream rounded-xl border-2 border-dashed border-brand-dark/10">
-                <h2 className="text-2xl font-bold text-brand-dark">Your Analytics Hub</h2>
-                <p className="text-brand-dark/70 mt-2">Sales data will appear here once you make your first sale!</p>
+            <div className="mt-12">
+                <h2 className="text-3xl font-bold text-brand-dark mb-6">Lifetime Sales Analytics</h2>
+                <div className="relative">
+                    {/* Blurred background content */}
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 filter blur-md opacity-60 pointer-events-none">
+                        <div className="lg:col-span-3 bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10">
+                            <h3 className="text-xl font-bold text-brand-dark mb-4">Top 5 Products by Revenue</h3>
+                            <div className="relative h-96 bg-brand-light rounded-md"></div>
+                        </div>
+                        <div className="lg:col-span-2 bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10">
+                            <h3 className="text-xl font-bold text-brand-dark mb-4">Revenue by Category</h3>
+                            <div className="relative h-96 w-48 h-48 mx-auto mt-12 bg-brand-light rounded-full"></div>
+                        </div>
+                    </div>
+
+                    {/* Overlay with message */}
+                    <div className="absolute inset-0 bg-brand-light/60 backdrop-blur-sm flex flex-col items-center justify-center text-center rounded-xl p-4">
+                        <LockIcon />
+                        <h3 className="text-2xl font-bold text-brand-dark">Unlock Your Sales Analytics</h3>
+                        <p className="text-brand-dark/70 mt-2 max-w-sm">Make your first sale to activate this section and gain powerful insights into your business performance.</p>
+                    </div>
+                </div>
             </div>
         );
     }

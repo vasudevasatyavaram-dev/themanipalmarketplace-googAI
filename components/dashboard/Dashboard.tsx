@@ -166,7 +166,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         ) : (
           <>
             <ProductList products={products} onEdit={openEditModal} onDelete={handleDeleteProduct} />
-            {totalSold > 0 && <Analytics products={products} />}
+            <Analytics products={products} />
           </>
         )}
       </main>
