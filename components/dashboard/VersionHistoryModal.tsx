@@ -43,20 +43,23 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
   }, [isOpen, fetchVersions]);
 
   const handleRevert = async (revertToVersion: Product) => {
-    const confirmationMessage = `Are you sure you want to revert to Version ${revertToVersion.edit_count}? All newer versions (${versions.filter(v => v.edit_count > revertToVersion.edit_count).map(v => `V${v.edit_count}`).join(', ')}) will be permanently deleted.`;
+    const newerVersions = versions.filter(v => v.edit_count > revertToVersion.edit_count);
+    const confirmationMessage = `Are you sure you want to revert to Version ${revertToVersion.edit_count}? ${newerVersions.length > 0 ? `All newer versions (${newerVersions.map(v => `V${v.edit_count}`).join(', ')}) will be permanently deleted.` : ''}`;
     
     if (window.confirm(confirmationMessage)) {
       setLoading(true);
       setError(null);
       try {
-        const { error: deleteError } = await supabase
-          .from('products')
-          .delete()
-          .eq('product_group_id', product.product_group_id)
-          .gt('edit_count', revertToVersion.edit_count);
+        if (newerVersions.length > 0) {
+            const { error: deleteError } = await supabase
+              .from('products')
+              .delete()
+              .eq('product_group_id', product.product_group_id)
+              .gt('edit_count', revertToVersion.edit_count);
+            
+            if (deleteError) throw deleteError;
+        }
         
-        if (deleteError) throw deleteError;
-
         // Note: Images for deleted versions are kept in storage in case the user
         // made a mistake and wants to re-upload them. A separate cleanup
         // process could handle orphaned images if necessary.

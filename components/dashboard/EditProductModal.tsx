@@ -35,7 +35,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   
   const [newImages, setNewImages] = useState<ImageFile[]>([]);
   const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
-  const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +47,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const [croppingImage, setCroppingImage] = useState<{ id: string; preview: string } | null>(null);
 
   const [isDirty, setIsDirty] = useState(false);
-  const initialProductState = useRef<Partial<Product> | null>(null);
+  const initialProductState = useRef<Partial<Product> & {image_urls_count: number} | null>(null);
 
   useEffect(() => {
     if (productToEdit) {
@@ -67,13 +66,13 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
             type: productToEdit.type as 'buy' | 'rent',
             quantity_left: productToEdit.quantity_left,
             price: Number(productToEdit.price),
+            image_urls_count: productToEdit.image_url.length,
         };
         
         newImages.forEach(img => URL.revokeObjectURL(img.preview));
         setNewImages([]);
         setFilesToCrop([]);
         setCroppingImage(null);
-        setImagesToDelete([]);
         setError(null);
         setIsDirty(false);
     }
@@ -93,12 +92,11 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
       price !== String(initialProductState.current.price) ||
       type !== initialProductState.current.type ||
       JSON.stringify(sortedCategories) !== JSON.stringify(sortedInitialCategories) ||
-      newImages.length > 0 ||
-      imagesToDelete.length > 0;
+      (existingImages.length + newImages.length) !== initialProductState.current.image_urls_count;
     
     setIsDirty(hasChanged);
 
-  }, [title, description, categories, type, quantity, price, newImages, imagesToDelete, productToEdit]);
+  }, [title, description, categories, type, quantity, price, newImages, existingImages, productToEdit]);
 
 
   const availableCategories = ["Books", "Tech and Gadgets", "Sports and Fitness", "Cycles, Bikes, etc", "Brand New", "Home & Kitchen Essentials", "Rent", "Other"];
@@ -167,9 +165,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     });
   };
 
-  const handleExistingImageDelete = (id: string, url: string) => {
+  const handleExistingImageDelete = (id: string) => {
     setExistingImages(prev => prev.filter(img => img.id !== id));
-    setImagesToDelete(prev => [...prev, url]);
   };
 
   const onCropComplete = (croppedFile: File) => {
@@ -341,7 +338,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
                         <div key={image.id} className="relative group aspect-square">
                            <img src={image.url} alt="Existing product" className="w-full h-full object-cover rounded-lg" />
                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 rounded-lg flex items-center justify-center">
-                              <button type="button" onClick={() => handleExistingImageDelete(image.id, image.url)} className="text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full hover:bg-red-500/80" title="Delete Image">
+                              <button type="button" onClick={() => handleExistingImageDelete(image.id)} className="text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full hover:bg-red-500/80" title="Delete Image">
                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                               </button>
                            </div>
