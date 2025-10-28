@@ -8,7 +8,6 @@ import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
 import VersionHistoryModal from './VersionHistoryModal';
 import ProfileModal from './ProfileModal';
-import ReportProblemModal from './ReportProblemModal';
 import ProductList from './ProductList';
 import Spinner from '../ui/Spinner';
 import Analytics from './Analytics';
@@ -35,7 +34,6 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isReportProblemModalOpen, setIsReportProblemModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [productForHistory, setProductForHistory] = useState<Product | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
@@ -60,7 +58,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   }, [fetchProducts]);
 
   useEffect(() => {
-    const isAnyModalOpen = isAddModalOpen || isEditModalOpen || isHistoryModalOpen || isProfileModalOpen || isReportProblemModalOpen;
+    const isAnyModalOpen = isAddModalOpen || isEditModalOpen || isHistoryModalOpen || isProfileModalOpen;
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -69,7 +67,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [isAddModalOpen, isEditModalOpen, isHistoryModalOpen, isProfileModalOpen, isReportProblemModalOpen]);
+  }, [isAddModalOpen, isEditModalOpen, isHistoryModalOpen, isProfileModalOpen]);
 
   const handleProductAdded = () => {
     const isFirstProduct = products.length === 0;
@@ -117,14 +115,10 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         return;
       }
       
-      const allImageUrls = allVersions?.flatMap(p => p.image_url) || [];
+      const allImageUrls = allVersions.flatMap(p => p.image_url);
       if (allImageUrls.length > 0) {
         const uniqueUrls = [...new Set(allImageUrls)];
-        // FIX: Property 'split' does not exist on type 'unknown'. Added a type guard to ensure `url` is a string.
-        const filePaths = uniqueUrls
-          .filter((url): url is string => typeof url === 'string')
-          .map(url => url.split('/product_images/')[1])
-          .filter(Boolean);
+        const filePaths = uniqueUrls.map(url => url.split('/product_images/')[1]).filter(Boolean);
 
         if (filePaths.length > 0) {
           const { error: storageError } = await supabase.storage.from('product_images').remove(filePaths);
@@ -161,7 +155,6 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         user={session.user} 
         onOpenProfile={() => setIsProfileModalOpen(true)}
         onNavigate={setCurrentView} 
-        onOpenReportProblem={() => setIsReportProblemModalOpen(true)}
       />
       <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex-grow w-full">
         {currentView === 'dashboard' && (
@@ -187,22 +180,22 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
                   </div>
               )}
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10">
+              <div className="flex overflow-x-auto md:grid md:grid-cols-3 gap-6 mb-8 pb-4 md:pb-0">
+                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
                       <div className="flex justify-between items-start">
                         <h3 className="text-brand-dark/70 text-sm font-medium">Total Products</h3>
                         <PackageIcon />
                       </div>
                       <p className="text-4xl font-bold text-brand-dark mt-2">{products.length}</p>
                   </div>
-                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10">
+                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
                       <div className="flex justify-between items-start">
                           <h3 className="text-brand-dark/70 text-sm font-medium">Total Items in Stock</h3>
                           <InventoryIcon />
                       </div>
                       <p className="text-4xl font-bold text-brand-dark mt-2">{totalQuantity}</p>
                   </div>
-                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10">
+                  <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
                       <div className="flex justify-between items-start">
                           <h3 className="text-brand-dark/70 text-sm font-medium">Total Items Sold</h3>
                           <SalesIcon />
@@ -255,11 +248,6 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
         session={session}
-      />
-      <ReportProblemModal
-        isOpen={isReportProblemModalOpen}
-        onClose={() => setIsReportProblemModalOpen(false)}
-        userId={session.user.id}
       />
     </div>
   );

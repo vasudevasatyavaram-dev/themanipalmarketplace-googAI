@@ -75,11 +75,7 @@ const Login: React.FC = () => {
             }
             setPageView('otp');
         } catch (error: any) {
-            if (error.message && error.message.toLowerCase().includes('rate limit')) {
-                setError('Too many requests. Please wait a minute before trying again.');
-            } else {
-                setError(error.error_description || error.message);
-            }
+            setError(error.error_description || error.message);
         } finally {
             setLoading(false);
         }
@@ -199,7 +195,7 @@ const Login: React.FC = () => {
                 <div className="inline-block">
                     <StoreIcon />
                 </div>
-                <h1 className="mt-4 text-lg sm:text-xl font-bold text-brand-dark tracking-wider">
+                <h1 className="mt-4 text-lg sm:text-xl font-bold text-brand-dark tracking-wider whitespace-nowrap">
                     • the manipal marketplace •
                 </h1>
                 <p className="mt-1 text-md text-brand-dark/70">
