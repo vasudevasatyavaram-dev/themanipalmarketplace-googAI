@@ -14,6 +14,10 @@ type View = 'viewing' | 'editing_name' | 'editing_email' | 'verifying_email' | '
 const GoogleIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.01,35.846,44,30.138,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
 );
+const LogOutIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
+);
+
 
 const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, session }) => {
   const [loading, setLoading] = useState(false);
@@ -94,6 +98,10 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, session })
     setLoading(false);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   const isGoogleUser = session.user.app_metadata.provider === 'google';
 
   const renderContent = () => {
@@ -154,26 +162,34 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, session })
         default: // 'viewing'
             return (
                 <>
-                    <div className="flex justify-between items-center py-3">
-                        <div>
-                            <p className="text-sm text-brand-dark/70">Full Name</p>
-                            <p className="font-semibold">{session.user.user_metadata.full_name || 'Not set'}</p>
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center py-3">
+                            <div>
+                                <p className="text-sm text-brand-dark/70">Full Name</p>
+                                <p className="font-semibold">{session.user.user_metadata.full_name || 'Not set'}</p>
+                            </div>
+                            <button onClick={() => setView('editing_name')} className="text-sm font-bold text-brand-accent hover:underline">Edit</button>
                         </div>
-                        <button onClick={() => setView('editing_name')} className="text-sm font-bold text-brand-accent hover:underline">Edit</button>
+                        <div className="flex justify-between items-center py-3 border-t border-brand-dark/10">
+                            <div>
+                                <p className="text-sm text-brand-dark/70">Email Address</p>
+                                <p className="font-semibold">{session.user.email || 'Not set'}</p>
+                            </div>
+                            {!isGoogleUser && <button onClick={() => setView('editing_email')} className="text-sm font-bold text-brand-accent hover:underline">Edit</button>}
+                        </div>
+                        <div className="flex justify-between items-center py-3 border-t border-brand-dark/10">
+                            <div>
+                                <p className="text-sm text-brand-dark/70">Phone Number</p>
+                                <p className="font-semibold">{session.user.phone || 'Not set'}</p>
+                            </div>
+                            <button onClick={() => setView('editing_phone')} className="text-sm font-bold text-brand-accent hover:underline">Edit</button>
+                        </div>
                     </div>
-                    <div className="flex justify-between items-center py-3 border-t border-brand-dark/10">
-                        <div>
-                            <p className="text-sm text-brand-dark/70">Email Address</p>
-                            <p className="font-semibold">{session.user.email || 'Not set'}</p>
-                        </div>
-                        {!isGoogleUser && <button onClick={() => setView('editing_email')} className="text-sm font-bold text-brand-accent hover:underline">Edit</button>}
-                    </div>
-                    <div className="flex justify-between items-center py-3 border-t border-brand-dark/10">
-                        <div>
-                            <p className="text-sm text-brand-dark/70">Phone Number</p>
-                            <p className="font-semibold">{session.user.phone || 'Not set'}</p>
-                        </div>
-                        <button onClick={() => setView('editing_phone')} className="text-sm font-bold text-brand-accent hover:underline">Edit</button>
+                    <div className="pt-4 border-t border-brand-dark/10">
+                        <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-brand-dark/80 hover:bg-brand-dark/5 border border-brand-dark/20 transition-colors px-4 py-2.5 rounded-lg font-semibold">
+                            <LogOutIcon />
+                            Logout
+                        </button>
                     </div>
                 </>
             );
@@ -196,7 +212,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, session })
             
             {renderContent()}
 
-            {isGoogleUser && (
+            {view === 'viewing' && isGoogleUser && (
                  <div className="p-3 bg-brand-cream rounded-lg border border-brand-dark/10 flex items-center gap-3">
                     <GoogleIcon />
                     <div>
