@@ -1,9 +1,11 @@
 
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import type { Product } from '../../types';
 import Spinner from '../ui/Spinner';
 import ImageCropModal from './ImageCropModal';
+import { type Crop } from 'react-image-crop';
 
 interface EditProductModalProps {
   isOpen: boolean;
@@ -13,15 +15,67 @@ interface EditProductModalProps {
   productToEdit: Product;
 }
 
-interface ImageFile {
+type CropMode = 'auto' | 'square' | 'portrait' | 'landscape';
+
+interface CroppedImage {
   id: string;
-  file: File;
-  preview: string;
+  originalFile: File;
+  previewUrl: string; // URL of the cropped version for the thumbnail
+  cropData: Crop; // This will be the PERCENTAGE crop
+  cropMode: CropMode;
 }
 
 interface ExistingImage {
     id: string;
     url: string;
+}
+
+const CropIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"></path><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"></path></svg>
+);
+
+async function getCroppedFile(imageFile: File, percentCrop: Crop): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const imageUrl = URL.createObjectURL(imageFile);
+    image.src = imageUrl;
+
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      const cropWidth = image.naturalWidth * (percentCrop.width / 100);
+      const cropHeight = image.naturalHeight * (percentCrop.height / 100);
+
+      if (cropWidth < 1 || cropHeight < 1) {
+          URL.revokeObjectURL(imageUrl);
+          return reject(new Error('Crop dimensions are too small.'));
+      }
+      canvas.width = cropWidth;
+      canvas.height = cropHeight;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        URL.revokeObjectURL(imageUrl);
+        return reject(new Error('Could not get canvas context.'));
+      }
+
+      ctx.drawImage(
+        image,
+        image.naturalWidth * (percentCrop.x / 100),
+        image.naturalHeight * (percentCrop.y / 100),
+        canvas.width, canvas.height, 0, 0, canvas.width, canvas.height
+      );
+      URL.revokeObjectURL(imageUrl);
+
+      canvas.toBlob(blob => {
+        if (!blob) return reject(new Error('Canvas is empty'));
+        resolve(new File([blob], imageFile.name, { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.95);
+    };
+    image.onerror = (error) => {
+      URL.revokeObjectURL(imageUrl);
+      reject(error);
+    };
+  });
 }
 
 const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, onProductEdited, userId, productToEdit }) => {
@@ -33,7 +87,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState('');
   
-  const [newImages, setNewImages] = useState<ImageFile[]>([]);
+  const [newImages, setNewImages] = useState<CroppedImage[]>([]);
   const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
   
   const [loading, setLoading] = useState(false);
@@ -43,8 +97,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const [filesToCrop, setFilesToCrop] = useState<File[]>([]);
-  const [croppingImage, setCroppingImage] = useState<{ id: string; preview: string } | null>(null);
+  const [filesToCropQueue, setFilesToCropQueue] = useState<File[]>([]);
+  const [imageToCrop, setImageToCrop] = useState<{ id?: string; file: File; initialCrop?: Crop; initialCropMode?: CropMode } | null>(null);
 
   const [isDirty, setIsDirty] = useState(false);
   const initialProductState = useRef<Partial<Product> & {image_urls_count: number} | null>(null);
@@ -69,10 +123,10 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
             image_urls_count: productToEdit.image_url.length,
         };
         
-        newImages.forEach(img => URL.revokeObjectURL(img.preview));
+        newImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
         setNewImages([]);
-        setFilesToCrop([]);
-        setCroppingImage(null);
+        setFilesToCropQueue([]);
+        setImageToCrop(null);
         setError(null);
         setIsDirty(false);
     }
@@ -106,18 +160,15 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const MAX_IMAGE_COUNT = 5;
 
    useEffect(() => {
-    if (!croppingImage && filesToCrop.length > 0) {
-      const nextFile = filesToCrop[0];
-      setCroppingImage({
-        id: `${nextFile.name}-${nextFile.lastModified}`,
-        preview: URL.createObjectURL(nextFile),
-      });
+    if (!imageToCrop && filesToCropQueue.length > 0) {
+      const nextFile = filesToCropQueue[0];
+      setImageToCrop({ file: nextFile });
     }
-  }, [filesToCrop, croppingImage]);
+  }, [filesToCropQueue, imageToCrop]);
 
   const handleFiles = (incomingFiles: File[]) => {
     setError(null);
-    if (existingImages.length + newImages.length + filesToCrop.length + incomingFiles.length > MAX_IMAGE_COUNT) {
+    if (existingImages.length + newImages.length + filesToCropQueue.length + incomingFiles.length > MAX_IMAGE_COUNT) {
       setError(`You can only have a maximum of ${MAX_IMAGE_COUNT} images in total.`);
       return;
     }
@@ -134,7 +185,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
       }
       validFiles.push(file);
     }
-    setFilesToCrop(prev => [...prev, ...validFiles]);
+    setFilesToCropQueue(prev => [...prev, ...validFiles]);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,39 +211,58 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const handleNewImageDelete = (id: string) => {
     setNewImages(prev => {
         const imageToDelete = prev.find(img => img.id === id);
-        if (imageToDelete) URL.revokeObjectURL(imageToDelete.preview);
+        if (imageToDelete) URL.revokeObjectURL(imageToDelete.previewUrl);
         return prev.filter(img => img.id !== id);
     });
+  };
+  
+  const handleEditCrop = (id: string) => {
+    const image = newImages.find(img => img.id === id);
+    if (image) {
+      setImageToCrop({ id: image.id, file: image.originalFile, initialCrop: image.cropData, initialCropMode: image.cropMode });
+    }
   };
 
   const handleExistingImageDelete = (id: string) => {
     setExistingImages(prev => prev.filter(img => img.id !== id));
   };
 
-  const onCropComplete = (croppedFile: File) => {
-    if (!croppingImage) return;
+  const onCropComplete = (croppedFile: File, cropData: Crop, cropMode: CropMode) => {
+    if (!imageToCrop) return;
+    const newPreviewUrl = URL.createObjectURL(croppedFile);
 
-    const newImage: ImageFile = {
-      id: `${croppedFile.name}-${Date.now()}`,
-      file: croppedFile,
-      preview: URL.createObjectURL(croppedFile),
-    };
-    setNewImages(prev => [...prev, newImage]);
-
-    URL.revokeObjectURL(croppingImage.preview);
-    setCroppingImage(null);
-    setFilesToCrop(prev => prev.slice(1));
+    if (imageToCrop.id) {
+        setNewImages(prev => prev.map(img => {
+            if (img.id === imageToCrop.id) {
+                URL.revokeObjectURL(img.previewUrl);
+                return { ...img, previewUrl: newPreviewUrl, cropData: cropData, cropMode: cropMode };
+            }
+            return img;
+        }));
+    } else {
+        const newImage: CroppedImage = {
+            id: `${imageToCrop.file.name}-${Date.now()}`,
+            originalFile: imageToCrop.file,
+            previewUrl: newPreviewUrl,
+            cropData: cropData,
+            cropMode: cropMode,
+        };
+        setNewImages(prev => [...prev, newImage]);
+        setFilesToCropQueue(prev => prev.slice(1));
+    }
+    setImageToCrop(null);
   };
 
   const onCropCancel = () => {
-    if (!croppingImage) return;
-    URL.revokeObjectURL(croppingImage.preview);
-    setCroppingImage(null);
-    setFilesToCrop(prev => prev.slice(1));
+    if (!imageToCrop) return;
+    if (!imageToCrop.id) {
+      setFilesToCropQueue(prev => prev.slice(1));
+    }
+    setImageToCrop(null);
   };
 
   const handleClose = () => {
-    newImages.forEach(img => URL.revokeObjectURL(img.preview));
+    newImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
     onClose();
   };
   
@@ -263,14 +333,12 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     setLoading(true);
 
     try {
-      // Note: We don't delete old images because the old version might be reverted to.
-      // A cleanup job could handle orphaned images later if needed.
-
       const sanitizedTitle = title.trim().replace(/\s+/g, '_').replace(/[^\w-]/g, '');
-      const uploadPromises = newImages.map(async (imageFile, index) => {
-        const fileExtension = imageFile.file.name.split('.').pop() || 'jpg';
+      const uploadPromises = newImages.map(async (image, index) => {
+        const finalFile = await getCroppedFile(image.originalFile, image.cropData);
+        const fileExtension = finalFile.name.split('.').pop() || 'jpg';
         const fileName = `${userId}/${sanitizedTitle}/${Date.now()}_image_${index}.${fileExtension}`;
-        const { data, error: uploadError } = await supabase.storage.from('product_images').upload(fileName, imageFile.file);
+        const { data, error: uploadError } = await supabase.storage.from('product_images').upload(fileName, finalFile);
         if (uploadError) throw uploadError;
         return supabase.storage.from('product_images').getPublicUrl(data.path).data.publicUrl;
       });
@@ -278,9 +346,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
       
       const finalImageUrls = [...existingImages.map(img => img.url), ...newImageUrls];
       
-      // Create a new product entry for the new version
       const newProductVersion = {
-        product_group_id: productToEdit.product_group_id, // Link to the original product
+        product_group_id: productToEdit.product_group_id,
         user_id: userId,
         title,
         description,
@@ -290,8 +357,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
         price: parseFloat(price),
         image_url: finalImageUrls,
         edit_count: productToEdit.edit_count + 1,
-        quantity_sold: productToEdit.quantity_sold, // Carry over sold count
-        approval_status: 'pending', // Reset for re-approval
+        quantity_sold: productToEdit.quantity_sold,
+        approval_status: 'pending',
         product_status: 'available',
         reject_explanation: null,
       };
@@ -320,39 +387,6 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
             <button onClick={handleClose} className="text-brand-dark/70 hover:text-brand-dark text-3xl leading-none">&times;</button>
           </div>
           <form id="edit-product-form" onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-grow">
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300 hover:border-brand-accent/50'}`}
-            >
-              <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept={ALLOWED_MIME_TYPES.join(',')} className="hidden" disabled={existingImages.length + newImages.length >= MAX_IMAGE_COUNT}/>
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/80 mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              <p className="text-brand-dark font-semibold">Drag & drop new images, or click to browse</p>
-              <p className="text-xs text-brand-dark/60 mt-1">Add up to 5 images total. Max 12MB each.</p>
-            </div>
-               <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                    {existingImages.map((image) => (
-                        <div key={image.id} className="relative group aspect-square">
-                           <img src={image.url} alt="Existing product" className="w-full h-full object-cover rounded-lg" />
-                           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 rounded-lg flex items-center justify-center">
-                              <button type="button" onClick={() => handleExistingImageDelete(image.id)} className="text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full hover:bg-red-500/80" title="Delete Image">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                              </button>
-                           </div>
-                        </div>
-                    ))}
-                    {newImages.map((image) => (
-                        <div key={image.id} className="relative group aspect-square">
-                           <img src={image.preview} alt="New preview" className="w-full h-full object-cover rounded-lg" />
-                           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 rounded-lg flex items-center justify-center">
-                              <button type="button" onClick={() => handleNewImageDelete(image.id)} className="text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full hover:bg-red-500/80" title="Delete Image"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                           </div>
-                        </div>
-                    ))}
-                </div>
             <div>
               <label htmlFor="title-edit" className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Title <span className="text-red-500">*</span></label>
               <input id="title-edit" type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" required />
@@ -400,6 +434,68 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
                 <input id="price-edit" type="number" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" min="1" required />
               </div>
             </div>
+
+            <div>
+                <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Images <span className="text-red-500">*</span></label>
+                <div
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300 hover:border-brand-accent/50'}`}
+                >
+                    <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept={ALLOWED_MIME_TYPES.join(',')} className="hidden" disabled={existingImages.length + newImages.length >= MAX_IMAGE_COUNT}/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/80 mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <p className="text-brand-dark font-semibold">Drag & drop new images, or click to browse</p>
+                    <p className="text-xs text-brand-dark/60 mt-1">Add up to 5 images total. Max 12MB each.</p>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4">
+                    {existingImages.map((image) => (
+                        <div key={image.id} className="relative group aspect-square bg-white rounded-lg border border-gray-200 overflow-hidden">
+                           <div className="w-full h-full flex items-center justify-center">
+                              <img src={image.url} alt="Existing product" className="max-w-full max-h-full object-contain" />
+                           </div>
+                           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 rounded-lg">
+                              <button
+                                type="button"
+                                onClick={() => handleExistingImageDelete(image.id)}
+                                className="absolute top-2 right-2 text-white opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-black/50 rounded-full hover:bg-red-500"
+                                title="Delete Image"
+                              >
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                              </button>
+                           </div>
+                        </div>
+                    ))}
+                    {newImages.map((image) => (
+                        <div key={image.id} className="relative group aspect-square bg-white rounded-lg border border-gray-200 overflow-hidden">
+                           <div className="w-full h-full flex items-center justify-center">
+                              <img src={image.previewUrl} alt="New preview" className="max-w-full max-h-full object-contain" />
+                           </div>
+                           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 rounded-lg flex items-center justify-center">
+                                <button
+                                    type="button"
+                                    onClick={() => handleEditCrop(image.id)}
+                                    className="absolute text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-black/50 rounded-full hover:bg-blue-500"
+                                    title="Edit Crop"
+                                >
+                                  <CropIcon />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleNewImageDelete(image.id)}
+                                    className="absolute top-2 right-2 text-white opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-black/50 rounded-full hover:bg-red-500"
+                                    title="Delete Image"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                           </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {error && <p className="text-red-500 text-sm text-center py-1">{error}</p>}
           </form>
           <div className="p-4 border-t border-brand-dark/10 flex justify-end gap-3">
@@ -410,9 +506,11 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
           </div>
         </div>
       </div>
-       {croppingImage && (
+       {imageToCrop && (
         <ImageCropModal 
-          imageSrc={croppingImage.preview}
+          imageSrc={URL.createObjectURL(imageToCrop.file)}
+          initialCrop={imageToCrop.initialCrop}
+          initialCropMode={imageToCrop.initialCropMode}
           onClose={onCropCancel}
           onCropComplete={onCropComplete}
         />

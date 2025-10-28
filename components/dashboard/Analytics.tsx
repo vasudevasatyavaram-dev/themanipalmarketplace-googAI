@@ -162,9 +162,9 @@ const Analytics: React.FC<AnalyticsProps> = ({ products, onNavigate }) => {
                     <div className="absolute inset-0 bg-brand-light/60 backdrop-blur-sm flex flex-col items-center justify-center text-center rounded-xl p-4">
                         <LockIcon />
                         <h3 className="text-2xl font-bold text-brand-dark">Unlock Your Sales Analytics</h3>
-                        <p className="text-brand-dark/70 mt-2 max-w-sm">Make your first sale to activate this section and gain powerful insights into your business performance.</p>
+                        <p className="text-brand-dark/70 mt-2 max-w-sm">Make your FIRST SALE to activate this section and gain powerful insights into your business performance.</p>
                         <button onClick={() => onNavigate('best_practices')} className="mt-4 text-md font-bold text-brand-accent hover:underline">
-                            Read the best practices to skyrocket sales &rarr;
+                            Read the BEST PRACTICES to lock first sale &rarr;
                         </button>
                     </div>
                 </div>

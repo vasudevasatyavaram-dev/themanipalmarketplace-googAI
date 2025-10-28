@@ -115,10 +115,11 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         return;
       }
       
-      const allImageUrls = allVersions.flatMap(p => p.image_url);
+      const allImageUrls = allVersions?.flatMap(p => p.image_url) ?? [];
       if (allImageUrls.length > 0) {
         const uniqueUrls = [...new Set(allImageUrls)];
-        const filePaths = uniqueUrls.map(url => url.split('/product_images/')[1]).filter(Boolean);
+        // FIX: Cast `url` to string to resolve 'unknown' type error.
+        const filePaths = uniqueUrls.map(url => (url as string).split('/product_images/')[1]).filter(Boolean);
 
         if (filePaths.length > 0) {
           const { error: storageError } = await supabase.storage.from('product_images').remove(filePaths);

@@ -1,0 +1,188 @@
+Here you will write everything. All context, plan, and blueprint will be written here without exception
+
+**Temporary Change: Dashboard Preview Mode**
+
+**Overview:**
+Temporarily disabled the login page to provide a direct preview of the seller dashboard. This is achieved by using a mock user session, allowing for immediate access to the dashboard's features and UI without needing to authenticate. This change is for development and preview purposes only and should be reverted for production.
+
+---
+
+**Feature: Mobile-Friendly Header Navigation**
+
+**Overview:**
+To enhance the user experience on mobile devices, the header has been redesigned to be less cluttered. The individual buttons for "Profile," "Best Practices," and "Logout" have been consolidated into a single main menu, accessible via a standard "hamburger" icon (three horizontal bars).
+
+**Behavior:**
+1.  **Menu Button:** A new menu icon is located in the top-right corner of the header.
+2.  **Opening the Menu:** Tapping or clicking this icon reveals a dropdown menu.
+3.  **Menu Options:** The dropdown menu contains the following options, each with a corresponding icon for clarity:
+    *   **Dashboard:** Navigates the user back to the main dashboard view.
+    *   **Profile:** Opens the profile settings modal.
+    *   **Best Practices:** Navigates to the best practices guide.
+    *   **Logout:** Signs the user out of the application.
+4.  **Closing the Menu:** The menu can be closed by either tapping the menu icon again or by tapping anywhere outside of the menu area.
+5.  **Responsive Design:** This change primarily benefits mobile users by saving screen real estate but provides a clean and consistent navigation experience across all screen sizes. The user's email/phone number, previously visible on larger screens, is now also accessible within this menu to maintain a clean header layout.
+
+**Visual Appearance:**
+*   The menu icon is styled to match the existing UI elements.
+*   The dropdown menu appears directly below the menu icon, with a `brand-cream` background, a subtle border, and a drop shadow to make it stand out from the content below.
+*   Menu items have a hover effect to provide visual feedback to the user.
+
+This change streamlines navigation and aligns the dashboard with modern, mobile-first design principles.
+
+---
+
+**Feature: Enhanced Image Cropping Modal**
+
+**Overview:**
+To improve the usability of the image cropper, especially for large portrait-oriented images, the cropping modal has been significantly enlarged. Previously, tall images would be scaled down to fit, making it difficult to see the full picture for precise cropping.
+
+**Behavior & Visuals:**
+1.  **Increased Modal Size:** The modal window is now wider (from `max-w-lg` to `max-w-3xl`), providing a larger canvas for the cropping tool.
+2.  **Taller Image Preview:** The maximum height for the image preview has been increased from `50vh` to `70vh` (70% of the screen's height). This ensures that even tall portrait images are fully visible, allowing sellers to easily and accurately select their desired crop.
+3.  **Responsive Design:** The modal remains fully responsive and will adapt to smaller screen sizes appropriately.
+
+This change provides a much better user experience for editing product images, leading to better-quality product photos on the marketplace.
+
+---
+
+**UI Tweak: Reorder Image Crop Aspect Ratios**
+
+**Overview:**
+To improve the workflow for sellers, the order of the aspect ratio presets in the image cropping modal has been adjusted. The "Auto" (freeform) option is now listed first, giving users immediate access to the most flexible cropping method, while "Square" is still maintained as the default selection upon opening the modal.
+
+**Behavior:**
+1.  **New Preset Order:** The buttons for aspect ratio selection now appear in the following order: **Auto, Square, Portrait, Landscape**.
+2.  **Default Aspect Ratio:** The initial crop selection remains **Square (1:1)**, as this is the recommended format for consistency. The "Square" button is highlighted by default when the modal opens.
+3.  **Functionality:** Clicking on any of the preset buttons changes the aspect ratio of the crop selection as it did before.
+
+This minor adjustment enhances user experience by making the most flexible cropping option more prominent and accessible.
+
+---
+
+**UI Fix: Immediate Aspect Ratio Update in Image Cropper**
+
+**Overview:**
+A fix has been implemented in the image cropping modal to address a usability issue. Previously, when a user selected a new aspect ratio preset (e.g., "Portrait," "Landscape"), the cropping rectangle would not visually update to the new shape until the user manually interacted with it.
+
+**Behavior Change:**
+1.  **Immediate Visual Feedback:** Now, upon clicking an aspect ratio button, the cropping selection immediately and automatically reshapes itself to match the selected aspect ratio (e.g., clicking "Landscape" instantly changes the crop to a 16:9 rectangle).
+2.  **Centered Crop:** The new crop is centered on the image and maintains a size of 90% of the image's dimensions, providing a sensible default that the user can then fine-tune.
+
+This fix makes the cropping tool more intuitive and responsive, improving the overall user experience during the product listing process.
+
+---
+
+**UI Change: Reorder Product Forms for Better Workflow**
+
+**Overview:**
+To improve the user workflow when adding or editing a product, the fields in both the "Add New Product" and "Edit Product" modals have been reordered. The current layout required sellers to handle images first, which can interrupt the flow of entering product details.
+
+**Behavior Change:**
+The image management section (including the drag-and-drop area and image previews) has been moved from the top of the form to the bottom. This allows sellers to first fill out or update all the textual details of their product (Title, Description, Price, etc.) and then manage the image uploads as the final step.
+
+**New Form Order (for both Add & Edit Modals):**
+1.  Product Title
+2.  Product Description
+3.  Categories & Type
+4.  Price & Quantity
+5.  **Product Images** (drag-and-drop area and previews)
+
+This change creates a more logical and linear process for listing and editing products, enhancing usability and providing a consistent experience across the dashboard.
+
+---
+
+**UI Fix: Robust Image Preview for All Aspect Ratios**
+
+**Overview:**
+An issue in the product forms has been fixed where image previews, particularly for landscape-oriented images, did not display correctly. They sometimes appeared stretched or improperly scaled instead of being "letterboxed" within their square containers.
+
+**Behavior Change:**
+1.  **Universal Aspect Ratio Support:** The image preview container styling has been made more robust. It now correctly displays images of *any* aspect ratio (portrait, landscape, square, or custom).
+2.  **Correct Scaling and Centering:** By wrapping the image in a flexbox container, it is guaranteed to be perfectly centered both horizontally and vertically. It is scaled down to fit entirely within the square preview box while maintaining its true aspect ratio.
+3.  **Visible Background:** The empty space around the image (pillarboxing for tall images, letterboxing for wide images) now correctly shows the container's white background, providing an accurate and clean preview of the final cropped image.
+
+This change ensures that sellers see an exact representation of their cropped images, regardless of the shape, providing confidence in how their product will be displayed on the marketplace.
+
+---
+
+**UI/UX Improvement: Reposition Image Preview Delete Button**
+
+**Overview:**
+To improve usability and prevent accidental deletions, the delete button on the image previews within the "Add Product" and "Edit Product" forms has been repositioned.
+
+**Behavior Change:**
+1.  **New Position:** The delete button, which appears when a user hovers over an image preview, is no longer in the center. It is now located in the **top-right corner**, a more standard and less intrusive position.
+2.  **Visual Style:** The button now has a semi-transparent background, ensuring the 'delete' icon is clearly visible regardless of the image content. The hover effect has been retained to provide clear feedback.
+3.  **Consistency:** This change is applied to all image previews in both the "Add Product" and "Edit Product" modals for a consistent user experience.
+
+This change makes the image management process safer and more user-friendly by reducing the risk of frustrating mistakes.
+
+---
+
+**Feature: Re-Croppable Image Previews**
+
+**Overview:**
+A significant enhancement has been made to the image upload workflow. Previously, once a crop was applied to an image, it was final. Now, sellers have the ability to go back and adjust the crop of any uploaded image directly from the thumbnail preview before submitting the form.
+
+**Behavior Change:**
+1.  **"Edit Crop" Button:** Each image thumbnail in the "Add Product" and "Edit Product" forms now features a new "Edit Crop" icon that appears on hover, next to the delete button.
+2.  **Re-Opening the Cropper:** Clicking this icon opens the Image Crop modal again, loading the *original, un-cropped image*.
+3.  **Preserved Crop Settings:** The cropper will automatically be set to the user's last saved crop for that image, allowing them to make adjustments from where they left off instead of starting over.
+4.  **Underlying Data Management:** To make this possible, the application now temporarily stores the original image file in the browser's memory, alongside the specific crop settings. The final, cropped image is only generated and uploaded to Supabase upon final submission of the product form.
+
+This feature provides a more forgiving and powerful image editing experience, ensuring sellers can perfect their product photos with ease.
+
+---
+
+**UI/UX Tweak: Optimized Image Action Button Placement**
+
+**Overview:**
+To enhance mobile usability and create a more intuitive interface, the placement of the action buttons on image previews has been refined.
+
+**Behavior Change:**
+1.  **Centered Primary Action:** The "Edit Crop" button now appears directly in the center of the image thumbnail on hover. This makes it the primary, most easily accessible action, especially on touch devices.
+2.  **Cornered Secondary Action:** The "Delete" button has been moved to the top-right corner of the thumbnail. This is a conventional and safe placement for a destructive action, significantly reducing the chance of accidental taps.
+3.  **Consistency:** This new, more intuitive layout is applied to all image previews in both the "Add Product" and "Edit Product" forms.
+
+This separation of actions provides a cleaner, more organized, and safer user experience.
+
+---
+
+**UI Fix: Perfect Re-Crop State Restoration**
+
+**Overview:**
+To create a more reliable and seamless re-cropping experience, the underlying logic of the Image Crop modal has been refactore. Instead of deriving the crop mode by calculating aspect ratios (which could lead to floating-point errors), the system now explicitly stores the user's selected mode (e.g., 'auto', 'square', 'portrait') in the application's state.
+
+**Behavior Change:**
+1.  **Direct State Storage:** When a crop is applied, both the crop coordinates and the selected mode are saved.
+2.  **Perfect State Restoration:** When a user clicks "Edit Crop," the modal now uses this saved mode to instantly and accurately highlight the correct aspect ratio button and restore the exact crop, completely eliminating the previous guesswork and potential for errors.
+
+This change ensures the re-cropping feature is not only more efficient but also perfectly reliable, correctly preserving the user's intent and providing a frustration-free editing experience.
+
+---
+
+**UI Tweak: "Auto" Crop Mode Improvement**
+
+**Overview:**
+To enhance the usability of the image cropper, the behavior of the "Auto" aspect ratio mode has been refined.
+
+**Behavior Change:**
+1.  **Square Default for "Auto":** When a user clicks the "Auto" button, the cropping selection now immediately defaults to a centered square shape.
+2.  **Immediate Free-form Resizing:** After this initial square is set, the aspect ratio lock is released, and the user can immediately resize the crop to any dimension they wish, as is expected from an "Auto" mode.
+
+This change provides a more predictable and intuitive starting point for free-form cropping, improving the overall user experience.
+
+---
+
+**Authentication Flow Re-enabled**
+
+**Overview:**
+The temporary "preview mode," which used a mock user session to bypass the login screen, has been reverted. The application's original, production-ready authentication flow has been restored.
+
+**Behavior Change:**
+1.  **Login Required:** Users will now be presented with the login/sign-up page upon visiting the application.
+2.  **Supabase Authentication:** The app now communicates with Supabase Authentication to manage user sessions. It will fetch the current session on load and listen for any changes in authentication state (e.g., login, logout).
+3.  **Secure Access:** The seller dashboard is now protected and can only be accessed by authenticated users.
+
+This change moves the application from a development preview state to a production-ready state with a fully functional and secure authentication system.
