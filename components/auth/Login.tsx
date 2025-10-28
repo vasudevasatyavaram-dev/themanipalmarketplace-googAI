@@ -125,7 +125,7 @@ const Login: React.FC = () => {
     const renderFormContent = () => {
         if (pageView === 'otp') {
             return (
-                <form onSubmit={handleVerifyOtp} className="space-y-6">
+                <form onSubmit={handleVerifyOtp} className="space-y-4">
                     <div>
                         <label htmlFor="otp" className="block text-sm font-medium text-brand-dark/80">Enter OTP</label>
                         <input id="otp" type="text" placeholder="123456" value={otp} onChange={(e) => setOtp(e.target.value)} required
@@ -146,7 +146,7 @@ const Login: React.FC = () => {
         }
 
         return (
-            <form onSubmit={handleAuthAction} className="space-y-6">
+            <form onSubmit={handleAuthAction} className="space-y-4">
                 {authView === 'signup' && (
                     <div>
                         <label htmlFor="fullName" className="block text-sm font-medium text-brand-dark/80">Full Name</label>
@@ -191,20 +191,20 @@ const Login: React.FC = () => {
     
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-brand-light p-4">
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
                 <div className="inline-block">
                     <StoreIcon />
                 </div>
-                <h1 className="mt-4 text-xl sm:text-2xl font-bold text-brand-dark tracking-wider whitespace-nowrap">
+                <h1 className="mt-4 text-lg sm:text-xl font-bold text-brand-dark tracking-wider whitespace-nowrap">
                     • the manipal marketplace •
                 </h1>
                 <p className="mt-1 text-md text-brand-dark/70">
                     Seller Dashboard - Manage your products
                 </p>
             </div>
-            <div className="max-w-md w-full bg-brand-cream shadow-xl rounded-2xl p-8 space-y-6 border border-brand-dark/10">
+            <div className="max-w-md w-full bg-brand-cream shadow-xl rounded-2xl p-6 space-y-4 border border-brand-dark/10">
                 <div className="text-left">
-                    <h2 className="text-3xl font-bold text-brand-dark">
+                    <h2 className="text-2xl font-bold text-brand-dark">
                         Welcome
                     </h2>
                     <p className="mt-1 text-brand-dark/70">
@@ -217,7 +217,7 @@ const Login: React.FC = () => {
                     <button onClick={() => { setAuthView('signup'); resetForm(); }} className={`w-1/2 p-2 rounded-md font-semibold transition-colors duration-300 ${authView === 'signup' ? 'bg-white shadow' : 'text-brand-dark/60'}`}>Sign Up</button>
                 </div>
 
-                <div className="pt-2">
+                <div>
                     {renderFormContent()}
                 </div>
                 
@@ -231,16 +231,7 @@ const Login: React.FC = () => {
 
                 {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-                <div className="relative pt-2">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-brand-cream text-gray-500">Or continue with</span>
-                    </div>
-                </div>
-
-                <div>
+                <div className="mt-4">
                     <button onClick={signInWithGoogle} disabled={loading} className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
                         <GoogleIcon />
                         Sign in with Google
