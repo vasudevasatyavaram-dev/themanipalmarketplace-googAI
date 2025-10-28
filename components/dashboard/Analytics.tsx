@@ -7,13 +7,14 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
 
 interface AnalyticsProps {
     products: Product[];
+    onNavigate: (view: 'best_practices') => void;
 }
 
 const LockIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-dark mb-4"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
 );
 
-const Analytics: React.FC<AnalyticsProps> = ({ products }) => {
+const Analytics: React.FC<AnalyticsProps> = ({ products, onNavigate }) => {
     
     const soldProducts = useMemo(() => products.filter(p => p.quantity_sold > 0), [products]);
 
@@ -162,6 +163,9 @@ const Analytics: React.FC<AnalyticsProps> = ({ products }) => {
                         <LockIcon />
                         <h3 className="text-2xl font-bold text-brand-dark">Unlock Your Sales Analytics</h3>
                         <p className="text-brand-dark/70 mt-2 max-w-sm">Make your first sale to activate this section and gain powerful insights into your business performance.</p>
+                        <button onClick={() => onNavigate('best_practices')} className="mt-4 text-md font-bold text-brand-accent hover:underline">
+                            Read the best practices to skyrocket sales &rarr;
+                        </button>
                     </div>
                 </div>
             </div>
