@@ -274,7 +274,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                       <div key={image.id} className="relative group aspect-square">
                          <img src={image.preview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 rounded-lg flex items-center justify-center">
-                            <button type="button" onClick={() => handleImageDelete(image.id)} className="text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full hover:bg-white/20" title="Delete Image">
+                            <button type="button" onClick={() => handleImageDelete(image.id)} className="text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full hover:bg-red-500/80" title="Delete Image">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                             </button>
                          </div>
@@ -285,7 +285,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             
             <div>
               <label htmlFor="title" className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Title <span className="text-red-500">*</span></label>
-              <input id="title" type="text" placeholder="e.g., Apple AirPods Pro (2nd Gen)" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" required />
+              <input id="title" type="text" placeholder="e.g., Apple AirPods Pro (2nd Gen)" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" required />
             </div>
             
             <div>
@@ -293,13 +293,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                     <label htmlFor="description" className="text-brand-dark/80 text-sm font-medium">Product Description <span className="text-red-500">*</span></label>
                     <button type="button" onClick={handleAddBulletPoint} className="text-xs font-semibold text-brand-accent hover:underline">Add Bullet Point</button>
                 </div>
-              <textarea ref={descriptionRef} id="description" placeholder="Describe the item's condition, features, and any other relevant details." value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" rows={3} required></textarea>
+              <textarea ref={descriptionRef} id="description" placeholder="Describe the item's condition, features, and any other relevant details." value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" rows={3} required></textarea>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative" ref={categoryRef}>
                 <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Categories (Recommended)</label>
-                <button type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent text-left flex justify-between items-center">
+                <button type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 text-left flex justify-between items-center">
                   <span className={`truncate ${categories.length > 0 ? 'text-brand-dark' : 'text-gray-400'}`}>
                     {categories.length > 0 ? categories.join(', ') : 'Select categories...'}
                   </span>
@@ -328,11 +328,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="price" className="text-brand-dark/80 text-sm font-medium mb-1 block">Price (₹) <span className="text-red-500">*</span></label>
-                <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" min="1" required />
+                <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" min="1" required />
               </div>
               <div>
                   <label htmlFor="quantity" className="text-brand-dark/80 text-sm font-medium mb-1 block">Quantity <span className="text-red-500">*</span></label>
-                  <input id="quantity" type="number" placeholder="e.g. 1" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent" min="1" required />
+                  <input id="quantity" type="number" placeholder="e.g. 1" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className="w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80" min="1" required />
               </div>
             </div>
             

@@ -13,8 +13,12 @@ interface DashboardProps {
 }
 
 const PlusIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
 );
+const PackageIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/70"><path d="M16.5 9.4a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z"></path><path d="M12 15v8"></path><path d="M12 2v2.4"></path><path d="m16.2 7.8 1.4-1.4"></path><path d="m6.4 6.4 1.4 1.4"></path></svg>);
+const InventoryIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/70"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>);
+const SalesIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/70"><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93l1.41 1.41"></path><path d="M17.66 17.66l1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M6.34 17.66l-1.41 1.41"></path><path d="M19.07 4.93l-1.41 1.41"></path><circle cx="12" cy="12" r="4"></circle></svg>);
+
 
 const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -131,17 +135,26 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         )}
         
         <div className="flex overflow-x-auto md:grid md:grid-cols-3 gap-6 mb-8 pb-4 md:pb-0">
-            <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
-                <h3 className="text-brand-dark/70 text-sm font-medium">Total Products</h3>
-                <p className="text-3xl font-bold text-brand-dark mt-1">{products.length}</p>
+            <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-brand-dark/70 text-sm font-medium">Total Products</h3>
+                  <PackageIcon />
+                </div>
+                <p className="text-4xl font-bold text-brand-dark mt-2">{products.length}</p>
             </div>
-             <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
-                <h3 className="text-brand-dark/70 text-sm font-medium">Total Items in Stock</h3>
-                <p className="text-3xl font-bold text-brand-dark mt-1">{totalQuantity}</p>
+             <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
+                <div className="flex justify-between items-start">
+                    <h3 className="text-brand-dark/70 text-sm font-medium">Total Items in Stock</h3>
+                    <InventoryIcon />
+                </div>
+                <p className="text-4xl font-bold text-brand-dark mt-2">{totalQuantity}</p>
             </div>
-             <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/5 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
-                <h3 className="text-brand-dark/70 text-sm font-medium">Total Items Sold</h3>
-                <p className="text-3xl font-bold text-brand-dark mt-1">{totalSold}</p>
+             <div className="bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10 flex-shrink-0 w-2/3 sm:w-1/2 md:w-auto">
+                <div className="flex justify-between items-start">
+                    <h3 className="text-brand-dark/70 text-sm font-medium">Total Items Sold</h3>
+                    <SalesIcon />
+                </div>
+                <p className="text-4xl font-bold text-brand-dark mt-2">{totalSold}</p>
             </div>
         </div>
 

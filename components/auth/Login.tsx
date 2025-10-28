@@ -12,7 +12,7 @@ const GoogleIcon = () => (
 );
 
 const StoreIcon = () => (
-    <div className="w-20 h-20 bg-brand-accent rounded-full flex items-center justify-center">
+    <div className="w-20 h-20 bg-brand-accent rounded-full flex items-center justify-center shadow-lg">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FAF9E1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" />
             <path d="M9 22V12H15V22" />
@@ -47,7 +47,6 @@ const Login: React.FC = () => {
         e.preventDefault();
         setError(null);
 
-        // Client-side validation before setting loading state
         if (authView === 'signup' && (!fullName.trim() || !phone.trim())) {
             setError('Full Name and Phone Number are required.');
             return;
@@ -130,10 +129,10 @@ const Login: React.FC = () => {
                     <div>
                         <label htmlFor="otp" className="block text-sm font-medium text-brand-dark/80">Enter OTP</label>
                         <input id="otp" type="text" placeholder="123456" value={otp} onChange={(e) => setOtp(e.target.value)} required
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
+                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
                     </div>
                     <div>
-                        <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
+                        <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
                             {loading ? <Spinner /> : 'Verify & Continue'}
                         </button>
                     </div>
@@ -152,7 +151,7 @@ const Login: React.FC = () => {
                     <div>
                         <label htmlFor="fullName" className="block text-sm font-medium text-brand-dark/80">Full Name</label>
                         <input id="fullName" type="text" placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required
-                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
+                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
                     </div>
                 )}
 
@@ -160,15 +159,15 @@ const Login: React.FC = () => {
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-brand-dark/80">Email address</label>
                         <input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required
-                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
+                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
                     </div>
                 ) : (
                      <div>
                         <label htmlFor="phone" className="block text-sm font-medium text-brand-dark/80">Phone number</label>
-                         <div className="mt-1 flex rounded-md shadow-sm">
-                             <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+91</span>
+                         <div className="mt-1 flex rounded-lg shadow-sm">
+                             <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">+91</span>
                              <input id="phone" type="tel" placeholder="9876543210" value={phone} onChange={(e) => setPhone(e.target.value)} required pattern="[0-9]{10}"
-                                className="block w-full flex-1 rounded-none rounded-r-md px-4 py-3 border border-gray-300 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
+                                className="block w-full flex-1 rounded-none rounded-r-lg px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
                          </div>
                     </div>
                 )}
@@ -177,12 +176,12 @@ const Login: React.FC = () => {
                     <div>
                         <label htmlFor="emailOptional" className="block text-sm font-medium text-brand-dark/80">Email address (optional)</label>
                         <input id="emailOptional" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)}
-                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
+                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
                     </div>
                 )}
 
                 <div>
-                    <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
+                    <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
                         {loading ? <Spinner /> : 'Send OTP'}
                     </button>
                 </div>
@@ -203,7 +202,7 @@ const Login: React.FC = () => {
                     Seller Dashboard - Manage your products
                 </p>
             </div>
-            <div className="max-w-md w-full bg-brand-cream shadow-2xl rounded-2xl p-8 space-y-6">
+            <div className="max-w-md w-full bg-brand-cream shadow-xl rounded-2xl p-8 space-y-6 border border-brand-dark/10">
                 <div className="text-left">
                     <h2 className="text-3xl font-bold text-brand-dark">
                         Welcome
@@ -242,7 +241,7 @@ const Login: React.FC = () => {
                 </div>
 
                 <div>
-                    <button onClick={signInWithGoogle} disabled={loading} className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    <button onClick={signInWithGoogle} disabled={loading} className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
                         <GoogleIcon />
                         Sign in with Google
                     </button>
