@@ -55,10 +55,6 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
     } else {
         setNotification("Product listed successfully! You'll be notified on your verified phone number once it's approved.");
     }
-
-    setTimeout(() => {
-        setNotification(null);
-    }, 7000);
   };
 
   const handleProductEdited = () => {
@@ -125,8 +121,9 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
         </div>
 
         {notification && (
-            <div className="mb-6 p-4 bg-green-100 text-green-800 border border-green-200 rounded-lg shadow-md animate-fade-in-down">
-                {notification}
+            <div className="mb-6 p-4 bg-green-100 text-green-800 border border-green-200 rounded-lg shadow-md flex justify-between items-center">
+                <span>{notification}</span>
+                <button onClick={() => setNotification(null)} className="text-green-800 hover:text-green-900 text-2xl leading-none font-bold">&times;</button>
             </div>
         )}
         
