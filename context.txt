@@ -454,13 +454,11 @@ To improve the dashboard's appearance for new sellers, the "locked" state of the
 **Feature: Add Product Wizard**
 
 **Overview:**
-To make the process of listing a new item less intimidating and more intuitive for mobile users, the "Add Product" modal has been transformed into a guided, multi-step wizard. The "Edit Product" modal remains a single form for efficiency.
+To make listing an item less intimidating, the "Add Product" modal has been transformed into a guided, two-step wizard. The "Edit Product" modal remains a single form for efficiency.
 
 **Behavior & Visual Changes:**
-1.  **Three-Step Process:** The new product flow is broken into three simple steps:
-    *   **Step 1: The Basics:** Captures the Title, Description, Price, and Quantity.
-    *   **Step 2: Details:** Handles the "Buy/Rent" type, conditional "Rental Session," and Categories.
-    *   **Step 3: Visuals:** A dedicated step for uploading and managing product images.
-2.  **Progress Indicator:** A clear progress bar at the top of the modal shows the user which step they are on and what's next, reducing cognitive load.
-3.  **Guided Navigation:** Simple "Next" and "Back" buttons allow for easy navigation between steps. The form performs validation at each step, ensuring all required information is entered before proceeding.
-4.  **Optimized for Mobile:** This step-by-step approach presents a small, manageable number of fields at a time, making the form feel quick and easy to complete on a small screen.
+1.  **Two-Step Process:** The new product flow is broken into two simple steps:
+    *   **Step 1: The Basics:** Captures Title, Description, Price, and Quantity.
+    *   **Step 2: Details & Visuals:** Handles the "Buy/Rent" type, conditional "Rental Session," Categories, and image uploads.
+2.  **Progress Indicator:** A clear progress bar at the top of the modal shows the user which step they are on, reducing cognitive load.
+3.  **Guided Navigation:** "Next" and "Back" buttons allow for easy navigation. The form performs validation at each step. This approach presents a manageable number of fields at a time, making the form feel quick and easy to complete on a small screen.

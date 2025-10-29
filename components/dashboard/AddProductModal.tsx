@@ -72,7 +72,7 @@ async function getCroppedFile(imageFile: File, percentCrop: Crop): Promise<File>
 }
 
 const ProgressIndicator: React.FC<{ currentStep: number }> = ({ currentStep }) => {
-    const steps = ["The Basics", "Details", "Visuals"];
+    const steps = ["The Basics", "Details & Visuals"];
     return (
         <div className="flex justify-between items-center px-5 py-3 border-b border-brand-dark/10">
             {steps.map((step, index) => {
@@ -302,16 +302,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep2 = () => {
-    const newErrors: Record<string, string> = {};
-    if (type === 'rent' && !sessionString.trim()) newErrors.session = 'Rental Session is required for rentals.';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleNext = () => {
     if (step === 1 && validateStep1()) setStep(2);
-    if (step === 2 && validateStep2()) setStep(3);
   };
 
   const handleBack = () => setStep(prev => prev > 1 ? prev - 1 : 1);
@@ -319,11 +311,18 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
-    if (images.length === 0) newErrors.images = 'At least one image is required.';
+    if (type === 'rent' && !sessionString.trim()) {
+      newErrors.session = 'Rental Session is required for rentals.';
+    }
+    if (images.length === 0) {
+      newErrors.images = 'At least one image is required.';
+    }
+    
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
+    setErrors({});
     setLoading(true);
 
     try {
@@ -399,7 +398,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             )}
             
             {step === 2 && (
-                 <div className="space-y-4 animate-fade-in">
+                <div className="space-y-4 animate-fade-in">
                     <div>
                         <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Type <span className="text-red-500">*</span></label>
                         <div className="flex bg-brand-cream border border-brand-dark/20 rounded-lg p-1">
@@ -435,44 +434,42 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                             </div>
                         )}
                     </div>
-                </div>
-            )}
 
-            {step === 3 && (
-                <div className="animate-fade-in">
-                    <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Images <span className="text-red-500">*</span></label>
-                    <div
-                        onClick={() => fileInputRef.current?.click()}
-                        onDragEnter={handleDragEnter} onDragLeave={handleDragLeave}
-                        onDragOver={handleDragOver} onDrop={handleDrop}
-                        className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300 hover:border-brand-accent/50'} ${errors.images ? 'border-red-500' : ''}`}
-                    >
-                        <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept={ALLOWED_MIME_TYPES.join(',')} className="hidden" disabled={images.length >= MAX_IMAGE_COUNT}/>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/80 mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        <p className="text-brand-dark font-semibold">Drag & drop images here, or click to browse</p>
-                        <p className="text-xs text-brand-dark/60 mt-1">Add up to {MAX_IMAGE_COUNT} images. Max 12MB each.</p>
+                    <div>
+                      <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Images <span className="text-red-500">*</span></label>
+                      <div
+                          onClick={() => fileInputRef.current?.click()}
+                          onDragEnter={handleDragEnter} onDragLeave={handleDragLeave}
+                          onDragOver={handleDragOver} onDrop={handleDrop}
+                          className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${isDragging ? 'border-brand-accent bg-brand-accent/10' : 'border-gray-300 hover:border-brand-accent/50'} ${errors.images ? 'border-red-500' : ''}`}
+                      >
+                          <input ref={fileInputRef} type="file" onChange={handleImageChange} multiple accept={ALLOWED_MIME_TYPES.join(',')} className="hidden" disabled={images.length >= MAX_IMAGE_COUNT}/>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/80 mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                          <p className="text-brand-dark font-semibold">Drag & drop images here, or click to browse</p>
+                          <p className="text-xs text-brand-dark/60 mt-1">Add up to {MAX_IMAGE_COUNT} images. Max 12MB each.</p>
+                      </div>
+                      {errors.images && <p className="text-red-500 text-sm text-center mt-2">{errors.images}</p>}
+                      
+                      {images.length > 0 && (
+                          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4">
+                              {images.map((image) => (
+                                  <div key={image.id} className="relative group aspect-square bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                      <div className="w-full h-full flex items-center justify-center">
+                                          <img src={image.previewUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
+                                      </div>
+                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 rounded-lg flex items-center justify-center">
+                                          <button type="button" onClick={() => handleEditCrop(image.id)} className="absolute text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-black/50 rounded-full hover:bg-blue-500" title="Edit Crop">
+                                              <CropIcon />
+                                          </button>
+                                          <button type="button" onClick={() => handleImageDelete(image.id)} className="absolute top-2 right-2 text-white opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-black/50 rounded-full hover:bg-red-500" title="Delete Image">
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                          </button>
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                      )}
                     </div>
-                    {errors.images && <p className="text-red-500 text-sm text-center mt-2">{errors.images}</p>}
-                    
-                    {images.length > 0 && (
-                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4">
-                            {images.map((image) => (
-                                <div key={image.id} className="relative group aspect-square bg-white rounded-lg border border-gray-200 overflow-hidden">
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <img src={image.previewUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
-                                    </div>
-                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 rounded-lg flex items-center justify-center">
-                                        <button type="button" onClick={() => handleEditCrop(image.id)} className="absolute text-white opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-black/50 rounded-full hover:bg-blue-500" title="Edit Crop">
-                                            <CropIcon />
-                                        </button>
-                                        <button type="button" onClick={() => handleImageDelete(image.id)} className="absolute top-2 right-2 text-white opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-black/50 rounded-full hover:bg-red-500" title="Delete Image">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
                 </div>
             )}
             {errors.form && <p className="text-red-500 text-sm text-center py-1">{errors.form}</p>}
@@ -485,7 +482,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             </div>
             <div>
               <button type="button" onClick={handleClose} className="bg-transparent text-gray-800 font-bold py-2.5 px-6 rounded-lg hover:bg-gray-200 transition">Cancel</button>
-              {step < 3 ? (
+              {step < 2 ? (
                 <button type="button" onClick={handleNext} className="bg-brand-accent text-white font-bold py-2.5 px-6 rounded-lg shadow-lg hover:opacity-90 transition">Next</button>
               ) : (
                 <button type="submit" form="add-product-form" disabled={loading} className="bg-brand-accent text-white font-bold py-2.5 px-6 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[140px]">
