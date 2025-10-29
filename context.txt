@@ -315,13 +315,23 @@ The Version History modal has been finalized to provide maximum clarity to selle
 1.  **Approved Version Highlighting:** The approved version is consistently highlighted with a green border and background, and labeled with a "Live" badge.
 2.  **Latest Version Tag:** The version with the highest `edit_count` is now always marked with a "(Latest)" tag, regardless of its approval status. This provides an unambiguous chronological reference point for the seller.
 ---
+**Feature: Enhanced Feedback for Live Product Edits**
+
+**Overview:**
+To improve clarity for sellers managing live products, the UI has been updated to provide better feedback on the status of their submitted edits, both on the main dashboard and within the version history.
+
+**Behavior & Visual Changes:**
+1.  **"Pending Edit" Indicator:** On the main product list, if a live, approved product has a newer version awaiting approval, a new **"Pending Edit"** status chip will appear next to the "Approved" status. This provides an immediate visual cue that a change is under review without altering the main "Approved" status.
+2.  **Rejection Reasons in History:** In the "Version History" modal, any version that was rejected will now display an information icon. Hovering over this icon will reveal a tooltip containing the `reject_explanation`, identical to the feature on the main product cards. This allows sellers to easily review the reasons for rejection for any past edits.
+3.  **Backend Enhancement:** A database function was upgraded to return not just that an unapproved edit exists, but also its specific status ('pending' or 'rejected'), allowing the UI to be more intelligent.
+---
 **Feature: Refined Feedback for Rejected Edits**
 
 **Overview:**
 To provide sellers with the clearest possible feedback, the UI for handling rejected product edits has been improved across the dashboard. This includes adding a specific status indicator for rejected edits on live products and ensuring all rejection feedback is prominent and accessible.
 
 **Behavior & Visual Changes:**
-1.  **"Edit Rejected" Indicator:** On the main product list, if a live, approved product has a newer, rejected edit, a new **"Edit Rejected"** status chip will appear. This chip is accompanied by an info icon that shows the rejection reason in a tooltip on hover.
+1.  **"Edit Rejected" Indicator:** On the main product list, if a live, approved product has a newer, rejected edit, a new **"Edit Rejected"** status chip appears. This chip is accompanied by an info icon that shows the rejection reason in a tooltip on hover.
 2.  **Improved Tooltip Visibility:** In the Version History modal, the z-index of the rejection reason tooltip has been increased, ensuring it always appears in front of other UI elements.
 3.  **Selective Opacity:** For all rejected products (both on the main list and in the history), the "Rejected" status chip and its associated info icon are no longer faded out. Only the non-essential product information is de-emphasized, making critical feedback and available actions clearly visible.
-4.  **Backend Enhancement:** A database function has been upgraded to also return the rejection reason for the latest unapproved edit, enabling the new UI on the main product list.
+4.  **Consistent History View:** This prominent, non-faded display of rejection reasons is applied to every rejected version within the Version History modal, regardless of the parent product's overall status.

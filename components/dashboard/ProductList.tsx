@@ -87,15 +87,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
           <div className="flex justify-between items-start mb-2">
             <h3 className={`font-bold text-lg text-brand-dark leading-tight pr-2 ${contentOpacity}`}>{product.title}</h3>
             <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
-              {isRejected && product.reject_explanation && (
-                  <div className="relative group/tooltip">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-700 cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                      <div className="absolute bottom-full mb-2 w-48 bg-brand-dark text-white text-xs rounded-lg py-2 px-3 right-1/2 translate-x-1/2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-300 pointer-events-none z-20 shadow-lg">
-                          {product.reject_explanation}
-                          <svg className="absolute text-brand-dark h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
-                      </div>
-                  </div>
-              )}
+              <div className={isRejected ? 'opacity-100' : ''}>
+                {isRejected && product.reject_explanation && (
+                    <div className="relative group/tooltip inline-block">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-700 cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <div className="absolute bottom-full mb-2 w-48 bg-brand-dark text-white text-xs rounded-lg py-2 px-3 right-1/2 translate-x-1/2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-300 pointer-events-none z-20 shadow-lg">
+                            {product.reject_explanation}
+                            <svg className="absolute text-brand-dark h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
+                        </div>
+                    </div>
+                )}
+              </div>
               {isApproved && unapprovedStatus?.status === 'pending' && (
                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-yellow-500/20 text-yellow-800">
                     Pending Edit
@@ -115,7 +117,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                     )}
                  </div>
               )}
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${getStatusChipClass(product.approval_status)}`}>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${getStatusChipClass(product.approval_status)} ${isRejected ? 'opacity-100' : ''}`}>
                   {product.approval_status === 'pending' ? 'Approval Pending' : product.approval_status.charAt(0).toUpperCase() + product.approval_status.slice(1)}
               </span>
             </div>
@@ -138,7 +140,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                   <p>Qty Left: <span className="font-bold text-brand-dark">{product.quantity_left}</span></p>
                   <p>Qty Sold: <span className="font-bold text-brand-dark">{product.quantity_sold}</span></p>
               </div>
-              <div className="flex items-end gap-2">
+              <div className={`flex items-end gap-2 ${isRejected ? 'opacity-100' : ''}`}>
                  {showEditButton && (
                     <div className="flex flex-col text-center flex-1">
                       <p className="text-xs text-brand-dark/60 mb-1 h-4">
