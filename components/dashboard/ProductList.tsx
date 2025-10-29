@@ -48,12 +48,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
     setCurrentIndex(newIndex);
   };
   
-  const contentOpacity = isRejected ? 'opacity-50' : '';
+  const contentShouldBeFaded = isRejected;
 
   return (
     <div className="group">
       <div className={`bg-brand-cream rounded-xl flex flex-col transition-all duration-300 ease-in-out overflow-hidden group-hover:shadow-2xl group-hover:-translate-y-1 ${isApproved ? 'border-2 border-green-500 shadow-xl' : 'border border-brand-dark/10 shadow-lg'}`}>
-        <div className={`w-full h-56 bg-white flex items-center justify-center p-2 relative group/carousel ${contentOpacity}`}>
+        <div className={`w-full h-56 bg-white flex items-center justify-center p-2 relative group/carousel ${contentShouldBeFaded ? 'opacity-50' : ''}`}>
           {isApproved && (
             <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 z-10 shadow">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -85,9 +85,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
         </div>
         <div className="p-5 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-2">
-            <h3 className={`font-bold text-lg text-brand-dark leading-tight pr-2 ${contentOpacity}`}>{product.title}</h3>
+            <h3 className={`font-bold text-lg text-brand-dark leading-tight pr-2 ${contentShouldBeFaded ? 'opacity-50' : ''}`}>{product.title}</h3>
             <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
-              <div className={isRejected ? 'opacity-100' : ''}>
+              
                 {isRejected && product.reject_explanation && (
                     <div className="relative group/tooltip inline-block">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-700 cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
@@ -97,7 +97,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                         </div>
                     </div>
                 )}
-              </div>
+              
               {isApproved && unapprovedStatus?.status === 'pending' && (
                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-yellow-500/20 text-yellow-800">
                     Pending Edit
@@ -117,13 +117,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                     )}
                  </div>
               )}
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${getStatusChipClass(product.approval_status)} ${isRejected ? 'opacity-100' : ''}`}>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${getStatusChipClass(product.approval_status)}`}>
                   {product.approval_status === 'pending' ? 'Approval Pending' : product.approval_status.charAt(0).toUpperCase() + product.approval_status.slice(1)}
               </span>
             </div>
           </div>
           
-          <div className={`space-y-1 text-sm text-brand-dark/80 mb-3 ${contentOpacity}`}>
+          <div className={`space-y-1 text-sm text-brand-dark/80 mb-3 ${contentShouldBeFaded ? 'opacity-50' : ''}`}>
               {product.category && product.category.length > 0 && (
                   <p><span className="font-semibold">Category:</span> {product.category.join(', ')}</p>
               )}
@@ -133,17 +133,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                </p>
           </div>
           
-          <p className={`text-brand-dark/70 text-sm mb-4 flex-grow whitespace-pre-wrap ${contentOpacity}`}>{product.description}</p>
+          <p className={`text-brand-dark/70 text-sm mb-4 flex-grow whitespace-pre-wrap ${contentShouldBeFaded ? 'opacity-50' : ''}`}>{product.description}</p>
 
           <div className="border-t border-brand-dark/10 pt-4 mt-auto">
-              <div className={`flex justify-between items-center text-sm text-brand-dark/70 mb-4 ${contentOpacity}`}>
+              <div className={`flex justify-between items-center text-sm text-brand-dark/70 mb-4 ${contentShouldBeFaded ? 'opacity-50' : ''}`}>
                   <p>Qty Left: <span className="font-bold text-brand-dark">{product.quantity_left}</span></p>
                   <p>Qty Sold: <span className="font-bold text-brand-dark">{product.quantity_sold}</span></p>
               </div>
-              <div className={`flex items-end gap-2 ${isRejected ? 'opacity-100' : ''}`}>
+              <div className="flex items-end gap-2">
                  {showEditButton && (
                     <div className="flex flex-col text-center flex-1">
-                      <p className="text-xs text-brand-dark/60 mb-1 h-4">
+                      <p className={`text-xs text-brand-dark/60 mb-1 h-4 ${contentShouldBeFaded ? 'opacity-50' : ''}`}>
                         {!isApproved && canEditNonApproved && `${3 - product.edit_count} ${3 - product.edit_count === 1 ? 'edit' : 'edits'} left`}
                       </p>
                       <button 
@@ -158,7 +158,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                  )}
                  {showHistoryButton && (
                    <div className="flex flex-col text-center flex-1">
-                      <p className="text-xs text-brand-dark/60 mb-1 h-4"></p>
+                      <p className={`text-xs text-brand-dark/60 mb-1 h-4 ${contentShouldBeFaded ? 'opacity-50' : ''}`}></p>
                       <button 
                           onClick={() => onHistory(product)}
                           className="w-full text-center bg-white border border-brand-dark/50 text-brand-dark px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition"
@@ -168,7 +168,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                    </div>
                  )}
                 <div className="flex flex-col text-center flex-1">
-                  <p className="text-xs text-brand-dark/60 mb-1 h-4"></p>
+                  <p className={`text-xs text-brand-dark/60 mb-1 h-4 ${contentShouldBeFaded ? 'opacity-50' : ''}`}></p>
                   <button
                     onClick={() => onDelete(product)}
                     className="w-full text-center bg-transparent border border-brand-accent text-brand-accent px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-accent hover:text-white transition"

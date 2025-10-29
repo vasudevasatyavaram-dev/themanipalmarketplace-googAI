@@ -332,6 +332,15 @@ To provide sellers with the clearest possible feedback, the UI for handling reje
 
 **Behavior & Visual Changes:**
 1.  **"Edit Rejected" Indicator:** On the main product list, if a live, approved product has a newer, rejected edit, a new **"Edit Rejected"** status chip appears. This chip is accompanied by an info icon that shows the rejection reason in a tooltip on hover.
-2.  **Improved Tooltip Visibility:** In the Version History modal, the z-index of the rejection reason tooltip has been increased, ensuring it always appears in front of other UI elements.
+2.  **Improved Tooltip Visibility:** In the Version History modal, the z-index of the rejection reason tooltip has been increased to `z-40`, ensuring it always appears in front of other UI elements.
 3.  **Selective Opacity:** For all rejected products (both on the main list and in the history), the "Rejected" status chip and its associated info icon are no longer faded out. Only the non-essential product information is de-emphasized, making critical feedback and available actions clearly visible.
 4.  **Consistent History View:** This prominent, non-faded display of rejection reasons is applied to every rejected version within the Version History modal, regardless of the parent product's overall status.
+---
+**UI Tweak: Ensure Visibility of Rejection Feedback**
+
+**Overview:**
+A final UI refinement has been made to the Version History modal to ensure that critical feedback for rejected versions is always clear and prominent. Previously, the "Rejected" badge and its info tooltip were incorrectly faded out along with the rest of the version's details.
+
+**Behavior & Visual Change:**
+*   In the Version History modal, the "Rejected" badge and the info icon (with its tooltip explaining the rejection reason) are now **always displayed at full opacity**.
+*   The non-essential details of the rejected version (like the title, description, and price) remain de-emphasized to communicate the status, but the feedback itself is now clearly visible.
