@@ -280,7 +280,6 @@ To provide sellers with clear and satisfying visual confirmation that their prod
 3.  **Elevated Shadow:** The card is given a slightly more pronounced, permanent box-shadow, making it appear "lifted" and more important on the page, while still enhancing on hover.
 
 These changes make it easy for sellers to scan their dashboard and identify which products are active on the marketplace, providing positive reinforcement and improving clarity.
-
 ---
 **Feature: Editing Live (Approved) Products**
 
@@ -417,3 +416,17 @@ Edited Placeholdertext (BY VASU)
 ---
 
 
+
+---
+**Refactor: Shared Product Form Component**
+
+**Overview:**
+To reduce code duplication and improve maintainability, the forms within the "Add Product" and "Edit Product" modals have been refactored. The shared UI elements of the form have been extracted into a new, reusable component called `ProductFormFields`.
+
+**Implementation Details:**
+1.  **New `ProductFormFields` Component:** A new component, `components/dashboard/ProductFormFields.tsx`, has been created. This component is responsible for rendering the entire form UI, including text inputs, dropdowns, and the complex image uploader. It is designed to be stateless and receives all necessary data and event handlers as props from its parent.
+2.  **`AddProductModal` Refactor:** This modal now uses the `ProductFormFields` component to render its form. It retains all of its own state management and submission logic but delegates the UI rendering, significantly reducing its JSX footprint.
+3.  **`EditProductModal` Refactor:** Similarly, this modal now uses `ProductFormFields`. It passes down additional props specific to editing, such as the list of existing images, and the new component handles the logic to display both existing and newly added images.
+4.  **Centralized Types:** To support the new component, shared type definitions for image data (`CroppedImage`, `ExistingImage`) have been moved to the central `types.ts` file.
+
+This refactoring makes the codebase cleaner and more modular. Any future changes to the product form's UI now only need to be made in one place (`ProductFormFields.tsx`), ensuring consistency across both the "add" and "edit" experiences.

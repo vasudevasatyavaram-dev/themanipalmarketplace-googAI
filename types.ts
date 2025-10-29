@@ -1,5 +1,7 @@
 
 
+import { type Crop } from 'react-image-crop';
+
 export type Json =
   | string
   | number
@@ -146,3 +148,18 @@ export interface Database {
 }
 
 export type Product = Database["public"]["Tables"]["products"]["Row"];
+
+export type CropMode = 'auto' | 'square' | 'portrait' | 'landscape';
+
+export interface CroppedImage {
+  id: string;
+  originalFile: File;
+  previewUrl: string;
+  cropData: Crop;
+  cropMode: CropMode;
+}
+
+export interface ExistingImage {
+    id: string;
+    url: string;
+}
