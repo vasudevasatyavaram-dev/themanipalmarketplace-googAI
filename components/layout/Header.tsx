@@ -76,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({ user, onOpenProfile, onNavigate, onOpen
           </button>
           <div className="flex items-center gap-2">
             <a
-              href="https://themanipalmarketplace-seller.vercel.app/"
+              href="https://the-manipal-marketplace.myshopify.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center text-brand-dark hover:bg-brand-dark/5 border border-brand-dark/20 transition-colors w-12 h-12 rounded-lg font-semibold"
