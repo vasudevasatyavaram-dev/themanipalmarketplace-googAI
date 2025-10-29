@@ -8,6 +8,7 @@ import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
 import VersionHistoryModal from './VersionHistoryModal';
 import ProfileModal from './ProfileModal';
+import HelpModal from './HelpModal';
 import ProductList from './ProductList';
 import Spinner from '../ui/Spinner';
 import Analytics from './Analytics';
@@ -38,6 +39,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [productForHistory, setProductForHistory] = useState<Product | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
@@ -75,7 +77,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   }, [fetchProducts]);
 
   useEffect(() => {
-    const isAnyModalOpen = isAddModalOpen || isEditModalOpen || isHistoryModalOpen || isProfileModalOpen;
+    const isAnyModalOpen = isAddModalOpen || isEditModalOpen || isHistoryModalOpen || isProfileModalOpen || isHelpModalOpen;
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -84,7 +86,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [isAddModalOpen, isEditModalOpen, isHistoryModalOpen, isProfileModalOpen]);
+  }, [isAddModalOpen, isEditModalOpen, isHistoryModalOpen, isProfileModalOpen, isHelpModalOpen]);
 
   const handleProductAdded = () => {
     const isFirstProduct = products.length === 0;
@@ -96,6 +98,11 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
     } else {
         setNotification("Product listed successfully! You'll be notified on your verified phone number once it's approved.");
     }
+  };
+  
+  const handleQuerySubmitted = () => {
+    setIsHelpModalOpen(false);
+    setNotification("Your query has been submitted! We will get back to you shortly.");
   };
 
   const handleProductEdited = () => {
@@ -172,7 +179,8 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
       <Header 
         user={session.user} 
         onOpenProfile={() => setIsProfileModalOpen(true)}
-        onNavigate={setCurrentView} 
+        onNavigate={setCurrentView}
+        onOpenHelp={() => setIsHelpModalOpen(true)}
       />
       <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex-grow w-full">
         {currentView === 'dashboard' && (
@@ -271,6 +279,12 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
       <ProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
+        session={session}
+      />
+      <HelpModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
+        onQuerySubmitted={handleQuerySubmitted}
         session={session}
       />
     </div>

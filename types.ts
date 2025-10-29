@@ -82,6 +82,38 @@ export interface Database {
           }
         ]
       }
+      report_query: {
+        Row: {
+          id: number
+          created_at: string
+          subject: string | null
+          body: string
+          user_id: string
+        }
+        Insert: {
+          id?: number
+          created_at?: string
+          subject?: string | null
+          body: string
+          user_id: string
+        }
+        Update: {
+          id?: number
+          created_at?: string
+          subject?: string | null
+          body?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_query_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

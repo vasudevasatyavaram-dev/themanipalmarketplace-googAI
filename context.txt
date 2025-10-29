@@ -384,3 +384,29 @@ A final, paranoid audit was performed to harden the application against the most
 1.  **Critical Data Integrity Fix (Version Hijacking):** A database trigger (`check_sequential_edit_count`) has been implemented. This powerful server-side rule runs before any new product version is inserted and ensures that the `edit_count` is strictly sequential (i.e., exactly one greater than the previous maximum). This makes it impossible for a user to "jump" versions (e.g., from Version 0 to 999), protecting the integrity of the version history and preventing exploits.
 2.  **Security Fix (File Path Hardening):** The method for generating file paths in Supabase Storage has been hardened. Instead of using the user-provided product title, which could be manipulated, image paths are now constructed using a secure, random UUID (e.g., `userId/{random_uuid}/{fileName}`). This decouples file paths from user input, making them unpredictable and immune to manipulation or file name collision attacks.
 3.  **UI Polish (Improved Error Feedback):** The error handling in the product submission modals has been improved. Instead of showing a generic "An unexpected error occurred" message, the system now provides more specific feedback, distinguishing between an "Image upload failed" and a "Failed to save product details." This gives the user clearer information if something goes wrong.
+
+---
+**Feature: Help & Support Reporting**
+
+**Overview:**
+A new "Help & Support" feature has been added, allowing sellers to easily submit queries or report problems directly from their dashboard. This provides a clear communication channel and helps in addressing user issues efficiently.
+
+**Behavior & Visual Changes:**
+1.  **Menu Integration:** A new "Help & Support" option, accompanied by a question mark icon, has been added to the main dropdown menu in the header.
+2.  **Reporting Modal:** Clicking this option opens a dedicated "Help & Support" modal.
+3.  **Submission Form:** The modal contains a simple form with an optional "Subject" field and a mandatory "Message" field.
+4.  **Submission Logic:** Upon submission, the form content is saved to a new `report_query` table, linked to the user. A confirmation notification appears on the dashboard.
+
+**Recommended Security (RLS):**
+It is highly recommended to apply RLS policies to the new `report_query` table to ensure users can only access their own submissions.
+```sql
+ALTER TABLE public.report_query ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow individual insert access"
+ON public.report_query FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Allow individual read access"
+ON public.report_query FOR SELECT
+USING (auth.uid() = user_id);
+```
