@@ -344,3 +344,11 @@ A final UI refinement has been made to the Version History modal to ensure that 
 **Behavior & Visual Change:**
 *   In the Version History modal, the "Rejected" badge and the info icon (with its tooltip explaining the rejection reason) are now **always displayed at full opacity**.
 *   The non-essential details of the rejected version (like the title, description, and price) remain de-emphasized to communicate the status, but the feedback itself is now clearly visible.
+---
+**UI Fix: Correct Tooltip Positioning in Version History**
+
+**Overview:**
+A fix has been implemented to correct a visual bug in the Version History modal where the tooltip explaining a rejection reason could be partially hidden or clipped by the modal's header.
+
+**Behavior & Visual Change:**
+*   The tooltip now appears **below** the information icon instead of above it. This ensures that it always has enough space to be fully visible within the scrollable content area, regardless of the version's position in the list.
