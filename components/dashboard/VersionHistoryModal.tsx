@@ -59,7 +59,8 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
             const orphanedUrls = [...urlsToDelete].filter(url => !urlsToKeep.has(url));
 
             if (orphanedUrls.length > 0) {
-                const filePaths = orphanedUrls.map(url => url.split('/product_images/')[1]).filter(Boolean);
+                // FIX: Cast `url` to string to resolve 'unknown' type error.
+                const filePaths = orphanedUrls.map(url => (url as string).split('/product_images/')[1]).filter(Boolean);
                 if (filePaths.length > 0) {
                     const { error: storageError } = await supabase.storage
                         .from('product_images')
