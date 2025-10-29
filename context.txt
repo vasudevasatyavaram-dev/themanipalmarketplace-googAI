@@ -490,3 +490,14 @@ The crop settings were redone so that the default crop was also working
 **Overview:**
 1.  **Analytics Lock Screen:** Improved the "locked" state of the Analytics section for new sellers. A larger, more prominent lock icon with the brand's accent color has been introduced to make the call-to-action clearer and more visually appealing.
 2.  **Best Practices Redesign:** The "Best Practices" guide has been completely redesigned from a simple text article into a modern, engaging, card-based layout. Each best practice is now presented in its own card with a unique icon, title, and clear bullet points, making the information much easier to scan, digest, and remember. This visual overhaul breaks the monotony and significantly enhances the user experience.
+---
+**Feature: Link to Customer Storefront**
+
+**Overview:**
+To provide sellers with quick access to the customer-facing marketplace, a new icon has been added to the header. This allows sellers to easily view the live website where their products are displayed.
+
+**Behavior & Visual Changes:**
+1.  **New Storefront Icon:** A new icon, representing a storefront, is now positioned to the left of the main menu button in the header.
+2.  **External Link:** Clicking this icon opens the customer marketplace website (`https://themanipalmarketplace-seller.vercel.app/`) in a new browser tab. This prevents sellers from losing their place in the dashboard.
+3.  **Consistent Styling:** The button is styled identically to the main menu button, ensuring a clean and consistent UI.
+4.  **Mobile-Friendly:** The icon is compact and does not add clutter to the mobile header, maintaining the application's mobile-first design.
