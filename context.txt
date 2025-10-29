@@ -410,3 +410,10 @@ CREATE POLICY "Allow individual read access"
 ON public.report_query FOR SELECT
 USING (auth.uid() = user_id);
 ```
+
+
+---
+Edited Placeholdertext (BY VASU)
+---
+
+
