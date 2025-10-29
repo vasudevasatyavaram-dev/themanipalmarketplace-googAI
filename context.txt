@@ -373,3 +373,14 @@ A final, rigorous audit was performed to harden the application against sophisti
 1.  **Critical Security Fix (RPC Functions):** The database functions (`get_latest_products_for_user`, `get_groups_with_unapproved_edits`) have been hardened. They now ignore the user ID sent from the client and instead use the secure, server-side `auth.uid()` function. This makes it impossible for a user to request data that does not belong to them, preventing a major data leakage vulnerability.
 2.  **Critical Data Integrity Fix (Race Conditions):** A `UNIQUE` constraint has been added to the `products` table on the combination of `(product_group_id, edit_count)`. This is a powerful database rule that makes it physically impossible to have two versions with the same number for the same product, completely eliminating potential race conditions from users editing in multiple tabs.
 3.  **UI Polish (Title Truncation):** Product titles on the main dashboard cards and in the Version History modal header are now truncated with an ellipsis (...) if they are too long. This proactively prevents long titles from breaking the UI layout.
+
+---
+**Audit: Final Security & Logic Audit**
+
+**Overview:**
+A final, paranoid audit was performed to harden the application against the most obscure edge cases and potential security threats. This audit identified and fixed a critical data integrity vulnerability related to versioning, a security risk in file handling, and a minor UI feedback issue.
+
+**Implementation Details:**
+1.  **Critical Data Integrity Fix (Version Hijacking):** A database trigger (`check_sequential_edit_count`) has been implemented. This powerful server-side rule runs before any new product version is inserted and ensures that the `edit_count` is strictly sequential (i.e., exactly one greater than the previous maximum). This makes it impossible for a user to "jump" versions (e.g., from Version 0 to 999), protecting the integrity of the version history and preventing exploits.
+2.  **Security Fix (File Path Hardening):** The method for generating file paths in Supabase Storage has been hardened. Instead of using the user-provided product title, which could be manipulated, image paths are now constructed using a secure, random UUID (e.g., `userId/{random_uuid}/{fileName}`). This decouples file paths from user input, making them unpredictable and immune to manipulation or file name collision attacks.
+3.  **UI Polish (Improved Error Feedback):** The error handling in the product submission modals has been improved. Instead of showing a generic "An unexpected error occurred" message, the system now provides more specific feedback, distinguishing between an "Image upload failed" and a "Failed to save product details." This gives the user clearer information if something goes wrong.
