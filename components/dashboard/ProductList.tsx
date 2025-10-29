@@ -6,7 +6,7 @@ interface ProductListProps {
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
   onHistory: (product: Product) => void;
-  groupsWithPendingEdits: string[];
+  unapprovedEditsStatus: Map<string, string>;
 }
 
 interface ProductCardProps {
@@ -14,10 +14,10 @@ interface ProductCardProps {
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
   onHistory: (product: Product) => void;
-  hasPendingEdits: boolean;
+  unapprovedStatus?: string;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, onHistory, hasPendingEdits }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, onHistory, unapprovedStatus }) => {
   const isRejected = product.approval_status === 'rejected';
   const isApproved = product.approval_status === 'approved';
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -33,7 +33,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
 
   const canEditNonApproved = product.edit_count < 3;
   const showEditButton = isApproved || ((isRejected || product.approval_status === 'pending') && canEditNonApproved);
-  const showHistoryButton = (isApproved && hasPendingEdits) || (!isApproved && product.edit_count > 0);
+  const showHistoryButton = (isApproved && unapprovedStatus) || (!isApproved && product.edit_count > 0);
 
   const goToPrevious = () => {
     const isFirstSlide = currentIndex === 0;
@@ -50,7 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
   return (
     <div className="group">
       <div className={`bg-brand-cream rounded-xl flex flex-col transition-all duration-300 ease-in-out overflow-hidden group-hover:shadow-2xl group-hover:-translate-y-1 ${isApproved ? 'border-2 border-green-500 shadow-xl' : 'border border-brand-dark/10 shadow-lg'}`}>
-        <div className={`w-full h-56 bg-white flex items-center justify-center p-2 relative group/carousel transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
+        <div className={`w-full h-56 bg-white flex items-center justify-center p-2 relative group/carousel ${isRejected ? 'opacity-50' : ''}`}>
           {isApproved && (
             <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 z-10 shadow">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -82,8 +82,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
         </div>
         <div className="p-5 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-2">
-            <h3 className={`font-bold text-lg text-brand-dark leading-tight pr-2 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>{product.title}</h3>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <h3 className={`font-bold text-lg text-brand-dark leading-tight pr-2 ${isRejected ? 'opacity-50' : ''}`}>{product.title}</h3>
+            <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
               {product.approval_status === 'rejected' && product.reject_explanation && (
                   <div className="relative group/tooltip">
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-700 cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
@@ -93,13 +93,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                       </div>
                   </div>
               )}
+              {isApproved && unapprovedStatus === 'pending' && (
+                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-yellow-500/20 text-yellow-800">
+                    Pending Edit
+                 </span>
+              )}
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap ${getStatusChipClass(product.approval_status)}`}>
                   {product.approval_status === 'pending' ? 'Approval Pending' : product.approval_status.charAt(0).toUpperCase() + product.approval_status.slice(1)}
               </span>
             </div>
           </div>
           
-          <div className={`space-y-1 text-sm text-brand-dark/80 mb-3 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
+          <div className={`space-y-1 text-sm text-brand-dark/80 mb-3 ${isRejected ? 'opacity-50' : ''}`}>
               {product.category && product.category.length > 0 && (
                   <p><span className="font-semibold">Category:</span> {product.category.join(', ')}</p>
               )}
@@ -109,10 +114,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                </p>
           </div>
           
-          <p className={`text-brand-dark/70 text-sm mb-4 flex-grow transition-opacity whitespace-pre-wrap ${isRejected ? 'opacity-50' : ''}`}>{product.description}</p>
+          <p className={`text-brand-dark/70 text-sm mb-4 flex-grow whitespace-pre-wrap ${isRejected ? 'opacity-50' : ''}`}>{product.description}</p>
 
           <div className="border-t border-brand-dark/10 pt-4 mt-auto">
-              <div className={`flex justify-between items-center text-sm text-brand-dark/70 mb-4 transition-opacity ${isRejected ? 'opacity-50' : ''}`}>
+              <div className={`flex justify-between items-center text-sm text-brand-dark/70 mb-4 ${isRejected ? 'opacity-50' : ''}`}>
                   <p>Qty Left: <span className="font-bold text-brand-dark">{product.quantity_left}</span></p>
                   <p>Qty Sold: <span className="font-bold text-brand-dark">{product.quantity_sold}</span></p>
               </div>
@@ -125,7 +130,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                       <button 
                         onClick={() => onEdit(product)}
                         disabled={!isApproved && !canEditNonApproved}
-                        className="w-full text-center bg-white border border-brand-dark/50 text-brand-dark px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed"
+                        className={`w-full text-center bg-white border border-brand-dark/50 text-brand-dark px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed ${isRejected ? 'opacity-100' : ''}`}
                         title={!isApproved && !canEditNonApproved ? 'Max edits reached' : ''}
                       >
                         {isRejected ? 'Resubmit' : 'Edit'}
@@ -137,7 +142,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
                       <p className="text-xs text-brand-dark/60 mb-1 h-4"></p>
                       <button 
                           onClick={() => onHistory(product)}
-                          className="w-full text-center bg-white border border-brand-dark/50 text-brand-dark px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition"
+                          className={`w-full text-center bg-white border border-brand-dark/50 text-brand-dark px-3 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition ${isRejected ? 'opacity-100' : ''}`}
                       >
                           History
                       </button>
@@ -160,7 +165,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
   );
 };
 
-const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete, onHistory, groupsWithPendingEdits }) => {
+const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete, onHistory, unapprovedEditsStatus }) => {
   if (products.length === 0) {
     return (
       <div className="text-center py-16 px-6 bg-brand-cream rounded-xl border-2 border-dashed border-brand-dark/10">
@@ -180,7 +185,7 @@ const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete, o
           onEdit={onEdit} 
           onDelete={onDelete} 
           onHistory={onHistory}
-          hasPendingEdits={groupsWithPendingEdits.includes(product.product_group_id)}
+          unapprovedStatus={unapprovedEditsStatus.get(product.product_group_id)}
         />
       ))}
     </div>

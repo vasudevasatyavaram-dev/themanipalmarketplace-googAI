@@ -291,7 +291,7 @@ The product editing workflow has been updated to allow sellers to submit edits f
 1.  **"Edit" Button on Approved Products:** The "Edit" button is now visible on all approved product cards. Clicking it opens the edit modal, pre-filled with the live product's data.
 2.  **Dashboard Display Logic:** Your dashboard will now always display the **live, approved version** of a product if one exists. Any pending edits you've submitted will not replace the live version on your main dashboard view.
 3.  **"History" Button for Unapproved Edits:** A "History" button will now appear on your approved product cards *only if* you have a newer version that is pending approval or has been rejected. This button is your gateway to viewing and managing those unapproved edits.
-4.  **Backend Functionality:** The core database function `get_latest_products_for_user` has been updated to prioritize showing the approved version, ensuring your dashboard reflects what customers see. A secondary function, `get_groups_with_pending_edits`, has been created to efficiently check which of your products have unapproved edits.
+4.  **Backend Functionality:** The core database function `get_latest_products_for_user` has been updated to prioritize showing the approved version, ensuring your dashboard reflects what customers see. A secondary function, `get_groups_with_unapproved_edits`, has been created to efficiently check which of your products have unapproved edits.
 5.  **Reverting:** The revert functionality in the Version History modal works as before. You can revert to the approved version, which will delete any newer, unapproved edits.
 
 ---
@@ -314,3 +314,13 @@ The Version History modal has been finalized to provide maximum clarity to selle
 **Behavior & Visual Changes:**
 1.  **Approved Version Highlighting:** The approved version is consistently highlighted with a green border and background, and labeled with a "Live" badge.
 2.  **Latest Version Tag:** The version with the highest `edit_count` is now always marked with a "(Latest)" tag, regardless of its approval status. This provides an unambiguous chronological reference point for the seller.
+---
+**Feature: Enhanced Feedback for Live Product Edits**
+
+**Overview:**
+To improve clarity for sellers managing live products, the UI has been updated to provide better feedback on the status of their submitted edits, both on the main dashboard and within the version history.
+
+**Behavior & Visual Changes:**
+1.  **"Pending Edit" Indicator:** On the main product list, if a live, approved product has a newer version awaiting approval, a new **"Pending Edit"** status chip will appear next to the "Approved" status. This provides an immediate visual cue that a change is under review without altering the main "Approved" status.
+2.  **Rejection Reasons in History:** In the "Version History" modal, any version that was rejected will now display an information icon. Hovering over this icon will reveal a tooltip containing the `reject_explanation`, identical to the feature on the main product cards. This allows sellers to easily review the reasons for rejection for any past edits.
+3.  **Backend Enhancement:** A database function (`get_groups_with_unapproved_edits`) now returns the specific status ('pending' or 'rejected') of the latest unapproved edit, allowing the UI to display the correct feedback.

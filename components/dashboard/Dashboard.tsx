@@ -38,15 +38,14 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [productForHistory, setProductForHistory] = useState<Product | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('dashboard');
-  const [groupsWithPendingEdits, setGroupsWithPendingEdits] = useState<string[]>([]);
+  const [unapprovedEditsStatus, setUnapprovedEditsStatus] = useState<Map<string, string>>(new Map());
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     
-    // Fetch products and pending edits in parallel
-    const [productsResult, pendingEditsResult] = await Promise.all([
+    const [productsResult, unapprovedEditsResult] = await Promise.all([
       supabase.rpc('get_latest_products_for_user', { p_user_id: session.user.id }),
-      supabase.rpc('get_groups_with_pending_edits', { p_user_id: session.user.id })
+      supabase.rpc('get_groups_with_unapproved_edits', { p_user_id: session.user.id })
     ]);
 
     const { data: productsData, error: productsError } = productsResult;
@@ -56,12 +55,13 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
       setProducts(productsData as Product[]);
     }
 
-    const { data: pendingEditsData, error: pendingEditsError } = pendingEditsResult;
-    if (pendingEditsError) {
-      // Don't block the UI for this, just log it
-      console.error('Error fetching pending edits:', pendingEditsError.message);
-    } else if (pendingEditsData) {
-      setGroupsWithPendingEdits(pendingEditsData.map(item => item.product_group_id_pending));
+    const { data: unapprovedEditsData, error: unapprovedEditsError } = unapprovedEditsResult;
+    if (unapprovedEditsError) {
+      console.error('Error fetching unapproved edits:', unapprovedEditsError.message);
+    } else if (unapprovedEditsData) {
+      // FIX: Explicitly type the Map constructor to ensure it is created as Map<string, string>.
+      const statusMap = new Map<string, string>(unapprovedEditsData.map(item => [item.product_group_id, item.latest_status]));
+      setUnapprovedEditsStatus(statusMap);
     }
     
     setLoading(false);
@@ -230,7 +230,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
                     onEdit={openEditModal} 
                     onDelete={handleDeleteProduct} 
                     onHistory={openHistoryModal}
-                    groupsWithPendingEdits={groupsWithPendingEdits}
+                    unapprovedEditsStatus={unapprovedEditsStatus}
                   />
                   <Analytics products={products} onNavigate={setCurrentView} />
                 </>

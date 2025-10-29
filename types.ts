@@ -93,12 +93,13 @@ export interface Database {
         }
         Returns: Database["public"]["Tables"]["products"]["Row"][]
       }
-      get_groups_with_pending_edits: {
+      get_groups_with_unapproved_edits: {
         Args: {
           p_user_id: string;
         };
         Returns: {
-          product_group_id_pending: string;
+          product_group_id: string;
+          latest_status: string;
         }[];
       }
     }
