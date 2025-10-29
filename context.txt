@@ -430,3 +430,23 @@ To reduce code duplication and improve maintainability, the forms within the "Ad
 4.  **Centralized Types:** To support the new component, shared type definitions for image data (`CroppedImage`, `ExistingImage`) have been moved to the central `types.ts` file.
 
 This refactoring makes the codebase cleaner and more modular. Any future changes to the product form's UI now only need to be made in one place (`ProductFormFields.tsx`), ensuring consistency across both the "add" and "edit" experiences.
+---
+**UI Tweak: Enhance Login Page Title**
+
+**Overview:**
+To improve the visual hierarchy and branding on the login page, the main title has been made larger and more visually prominent, while ensuring it remains responsive on mobile devices.
+
+**Behavior & Visual Changes:**
+1.  **Increased Font Size:** The title's font size has been increased to `text-2xl` (24px) on mobile and to 28px on larger screens for better visibility.
+2.  **Visual Accent:** The dots (`•`) on either side of the title have been colored with the brand's accent color, making the title "pop" and reinforcing the brand identity.
+3.  **Responsive Spacing:** The letter spacing has been adjusted to be normal on mobile to accommodate the larger font size on one line, and wider on larger screens where there is more space.
+---
+**UI Tweak: Compact Analytics Lock Screen**
+
+**Overview:**
+To improve the dashboard's appearance for new sellers, the "locked" state of the analytics section has been redesigned to be significantly more compact and space-efficient.
+
+**Behavior & Visual Changes:**
+1.  **Compact Placeholder:** The previous, large blurred placeholder has been replaced with a single, smaller container that features an abstract, blurred representation of charts.
+2.  **Reduced Height:** This change drastically reduces the vertical space taken up by the component, making the dashboard feel less empty for users who have not yet made a sale.
+3.  **Resized Content:** The lock icon and text in the overlay have been resized to better fit the new, smaller layout, creating a cleaner and more professional look.

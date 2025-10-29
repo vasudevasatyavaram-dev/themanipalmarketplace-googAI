@@ -11,7 +11,10 @@ interface AnalyticsProps {
 }
 
 const LockIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-dark mb-4"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 text-brand-dark mb-3">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    </svg>
 );
 
 const Analytics: React.FC<AnalyticsProps> = ({ products, onNavigate }) => {
@@ -145,26 +148,25 @@ const Analytics: React.FC<AnalyticsProps> = ({ products, onNavigate }) => {
         return (
             <div className="mt-12">
                 <h2 className="text-3xl font-bold text-brand-dark mb-6">Lifetime Sales Analytics</h2>
-                <div className="relative">
-                    {/* Blurred background content */}
-                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 filter blur-md opacity-60 pointer-events-none">
-                        <div className="lg:col-span-3 bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10">
-                            <h3 className="text-xl font-bold text-brand-dark mb-4">Top 5 Products by Revenue</h3>
-                            <div className="relative h-96 bg-brand-light rounded-md"></div>
+                <div className="relative bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10 overflow-hidden">
+                    {/* Blurred background content - simplified and more compact */}
+                    <div className="flex gap-6 filter blur-sm opacity-50 pointer-events-none">
+                        {/* Fake Bar Chart */}
+                        <div className="flex-1 space-y-2 py-4">
+                            <div className="h-4 bg-brand-light rounded"></div>
+                            <div className="h-4 bg-brand-light rounded w-5/6"></div>
+                            <div className="h-4 bg-brand-light rounded w-3/4"></div>
                         </div>
-                        <div className="lg:col-span-2 bg-brand-cream p-6 rounded-xl shadow-md border border-brand-dark/10">
-                            <h3 className="text-xl font-bold text-brand-dark mb-4">Revenue by Category</h3>
-                            <div className="relative h-96 w-48 h-48 mx-auto mt-12 bg-brand-light rounded-full"></div>
-                        </div>
+                        {/* Fake Doughnut */}
+                        <div className="w-24 h-24 bg-brand-light rounded-full flex-shrink-0"></div>
                     </div>
-
                     {/* Overlay with message */}
-                    <div className="absolute inset-0 bg-brand-light/60 backdrop-blur-sm flex flex-col items-center justify-center text-center rounded-xl p-4">
+                    <div className="absolute inset-0 bg-brand-light/70 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
                         <LockIcon />
-                        <h3 className="text-2xl font-bold text-brand-dark">Unlock Your Sales Analytics</h3>
-                        <p className="text-brand-dark/70 mt-2 max-w-sm">Make your FIRST SALE to activate this section and gain powerful insights into your business performance.</p>
-                        <button onClick={() => onNavigate('best_practices')} className="mt-4 text-md font-bold text-brand-accent hover:underline">
-                            Read the BEST PRACTICES to lock first sale &rarr;
+                        <h3 className="text-xl font-bold text-brand-dark">Unlock Your Sales Analytics</h3>
+                        <p className="text-brand-dark/70 mt-1 max-w-sm text-sm">Make your FIRST SALE to activate this section and gain powerful insights into your business performance.</p>
+                        <button onClick={() => onNavigate('best_practices')} className="mt-3 text-sm font-bold text-brand-accent hover:underline">
+                            Read best practices to make your first sale &rarr;
                         </button>
                     </div>
                 </div>

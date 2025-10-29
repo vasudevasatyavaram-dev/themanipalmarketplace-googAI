@@ -195,8 +195,8 @@ const Login: React.FC = () => {
                 <div className="inline-block">
                     <StoreIcon />
                 </div>
-                <h1 className="mt-4 text-lg sm:text-xl font-bold text-brand-dark tracking-wider whitespace-nowrap">
-                    • the manipal marketplace •
+                <h1 className="mt-4 text-2xl sm:text-[28px] font-bold text-brand-dark tracking-normal sm:tracking-wider whitespace-nowrap">
+                    <span className="text-brand-accent">•</span> the manipal marketplace <span className="text-brand-accent">•</span>
                 </h1>
                 <p className="mt-1 text-md text-brand-dark/70">
                     Seller Dashboard - Manage your products
@@ -234,7 +234,7 @@ const Login: React.FC = () => {
                 <div className="mt-4">
                     <button onClick={signInWithGoogle} disabled={loading} className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
                         <GoogleIcon />
-                        Sign in with Google
+                        Sign in with Google instead
                     </button>
                 </div>
             </div>
