@@ -85,7 +85,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onEdit, onDelete, on
         </div>
         <div className="p-5 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-2">
-            <h3 className={`font-bold text-lg text-brand-dark leading-tight pr-2 ${contentShouldBeFaded ? 'opacity-50' : ''}`}>{product.title}</h3>
+            <h3 className={`font-bold text-lg text-brand-dark leading-tight pr-2 truncate ${contentShouldBeFaded ? 'opacity-50' : ''}`}>{product.title}</h3>
             <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
               
                 {isRejected && product.reject_explanation && (

@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import type { Product } from '../../types';
@@ -103,7 +100,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
   const [imageToCrop, setImageToCrop] = useState<{ id?: string; file: File; initialCrop?: Crop; initialCropMode?: CropMode } | null>(null);
 
   const [isDirty, setIsDirty] = useState(false);
-  const initialProductState = useRef<Partial<Product> & {image_urls_count: number} | null>(null);
+  const initialProductState = useRef<Partial<Product> & {image_url: string[]} | null>(null);
 
   useEffect(() => {
     if (productToEdit) {
@@ -124,7 +121,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
             quantity_left: productToEdit.quantity_left,
             price: Number(productToEdit.price),
             session: productToEdit.session || null,
-            image_urls_count: productToEdit.image_url.length,
+            image_url: productToEdit.image_url,
         };
         
         newImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
@@ -143,6 +140,10 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     const sortedCategories = [...categories].sort();
     const sortedInitialCategories = [...(initialProductState.current.category || [])].sort();
 
+    const initialImageUrls = initialProductState.current.image_url || [];
+    const currentExistingImageUrls = existingImages.map(img => img.url);
+    const imagesChanged = newImages.length > 0 || initialImageUrls.length !== currentExistingImageUrls.length;
+
     const hasChanged = 
       title !== initialProductState.current.title ||
       description !== initialProductState.current.description ||
@@ -152,7 +153,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
       (type === 'rent' && sessionString !== (initialProductState.current.session || '')) ||
       (type === 'buy' && (initialProductState.current.session !== null)) ||
       JSON.stringify(sortedCategories) !== JSON.stringify(sortedInitialCategories) ||
-      (existingImages.length + newImages.length) !== initialProductState.current.image_urls_count;
+      imagesChanged;
     
     setIsDirty(hasChanged);
 

@@ -50,6 +50,27 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
       setError(null);
       try {
         if (newerVersions.length > 0) {
+            // Identify and delete orphaned images before deleting DB records
+            const urlsToDelete = new Set(newerVersions.flatMap(v => v.image_url));
+            const urlsToKeep = new Set(versions
+                .filter(v => v.edit_count <= revertToVersion.edit_count)
+                .flatMap(v => v.image_url)
+            );
+            const orphanedUrls = [...urlsToDelete].filter(url => !urlsToKeep.has(url));
+
+            if (orphanedUrls.length > 0) {
+                const filePaths = orphanedUrls.map(url => url.split('/product_images/')[1]).filter(Boolean);
+                if (filePaths.length > 0) {
+                    const { error: storageError } = await supabase.storage
+                        .from('product_images')
+                        .remove(filePaths);
+                    if (storageError) {
+                        console.error("Failed to delete orphaned images, but proceeding with revert:", storageError);
+                    }
+                }
+            }
+            
+            // Now, delete the database records for the newer versions
             const { error: deleteError } = await supabase
               .from('products')
               .delete()
@@ -116,38 +137,41 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
                 return (
                   <div key={version.id} className={versionClasses}>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                      <div>
+                      <div className={isRejected ? 'opacity-60' : ''}>
                         <h3 className="font-bold text-lg text-brand-dark flex items-center flex-wrap gap-x-3 gap-y-1">
-                          <span className={isRejected ? 'opacity-60' : ''}>Version {version.edit_count}</span>
+                          <span>Version {version.edit_count}</span>
                           {isApproved && <span className="text-xs font-semibold text-green-800 bg-green-200 px-2 py-0.5 rounded-full">Live</span>}
                           {isLatest && <span className="text-sm font-semibold text-brand-accent">(Latest)</span>}
+                        </h3>
+                        <p className={`text-xs text-brand-dark/60 mt-1`}>Created on: {formatDate(version.created_at)}</p>
+                      </div>
+                      
+                       <div className="flex items-center gap-2 mt-3 sm:mt-0">
                           {isRejected && (
                             <div className="flex items-center gap-2">
                                 <span className="text-xs font-semibold text-red-800 bg-red-100 px-2 py-0.5 rounded-full">Rejected</span>
                                 {version.reject_explanation && (
                                      <div className="relative group/tooltip">
-                                        <svg xmlns="http://www.w.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-700 cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-700 cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                                         <div className="absolute top-full mt-2 w-48 bg-brand-dark text-white text-xs rounded-lg py-2 px-3 right-1/2 translate-x-1/2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-300 pointer-events-none z-40 shadow-lg">
                                             {version.reject_explanation}
-                                            <svg className="absolute text-brand-dark h-2 w-full left-0 bottom-full" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,127.5 127.5,0 255,127.5"/></svg>
+                                            <svg className="absolute text-brand-dark h-2 w-full left-0 bottom-full" x="0px" y="0px" viewBox="0 0 255 255" xmlSpace="preserve"><polygon className="fill-current" points="0,255 127.5,127.5 255,255"/></svg>
                                         </div>
                                     </div>
                                 )}
                             </div>
                           )}
-                        </h3>
-                        <p className={`text-xs text-brand-dark/60 mt-1 ${isRejected ? 'opacity-60' : ''}`}>Created on: {formatDate(version.created_at)}</p>
+                          {!isLatest && (
+                            <button 
+                              onClick={() => handleRevert(version)}
+                              disabled={isRejected}
+                              className="bg-white border border-brand-dark/50 text-brand-dark px-4 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                              title={isRejected ? "Cannot revert to a rejected version" : ""}
+                            >
+                              Revert to this version
+                            </button>
+                          )}
                       </div>
-                      {!isLatest && (
-                        <button 
-                          onClick={() => handleRevert(version)}
-                          disabled={isRejected}
-                          className="mt-3 sm:mt-0 bg-white border border-brand-dark/50 text-brand-dark px-4 py-2 text-sm font-semibold rounded-md hover:bg-brand-dark/5 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                          title={isRejected ? "Cannot revert to a rejected version" : ""}
-                        >
-                          Revert to this version
-                        </button>
-                      )}
                     </div>
                     <div className={`mt-3 pt-3 border-t border-brand-dark/10 text-sm space-y-1 ${isRejected ? 'opacity-60' : ''}`}>
                       <p><span className="font-semibold">Title:</span> {version.title}</p>

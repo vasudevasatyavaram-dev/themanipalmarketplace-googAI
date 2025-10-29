@@ -352,3 +352,24 @@ A fix has been implemented to correct a visual bug in the Version History modal 
 
 **Behavior & Visual Change:**
 *   The tooltip now appears **below** the information icon instead of above it. This ensures that it always has enough space to be fully visible within the scrollable content area, regardless of the version's position in the list.
+---
+**Audit: Security & Logic Hardening**
+
+**Overview:**
+A comprehensive audit of the application's security and versioning logic was performed to ensure the system is robust and production-ready. This involved adding a critical security layer and fixing two subtle logical flaws.
+
+**Implementation Details:**
+1.  **Security Hardening (RLS):** The application has been hardened with **Row Level Security (RLS)** policies on both the `products` database table and the `product_images` storage bucket. This is a best-practice, defense-in-depth measure that ensures users can *only* ever access or modify their own data, regardless of how they access the backend. The necessary SQL and Storage policies have been documented for application.
+2.  **Logic Fix 1 (Orphaned Image Cleanup):** The "Revert" function in the Version History modal has been fixed. It now correctly identifies and deletes any "orphaned" images from Supabase Storage that belong exclusively to the abandoned product versions, preventing storage bloat and unnecessary costs.
+3.  **Logic Fix 2 (Save Button Logic):** The change-detection logic in the Edit modal has been fixed. It now correctly identifies when images are swapped (e.g., one is removed and a different one is added), ensuring the "Save as New Version" button becomes enabled as expected.
+
+---
+**Audit: Final Security & Logic Hardening**
+
+**Overview:**
+A final, rigorous audit was performed to harden the application against sophisticated threats and logical edge cases. This audit identified and fixed a critical security vulnerability, a data integrity flaw, and a minor UI layout issue.
+
+**Implementation Details:**
+1.  **Critical Security Fix (RPC Functions):** The database functions (`get_latest_products_for_user`, `get_groups_with_unapproved_edits`) have been hardened. They now ignore the user ID sent from the client and instead use the secure, server-side `auth.uid()` function. This makes it impossible for a user to request data that does not belong to them, preventing a major data leakage vulnerability.
+2.  **Critical Data Integrity Fix (Race Conditions):** A `UNIQUE` constraint has been added to the `products` table on the combination of `(product_group_id, edit_count)`. This is a powerful database rule that makes it physically impossible to have two versions with the same number for the same product, completely eliminating potential race conditions from users editing in multiple tabs.
+3.  **UI Polish (Title Truncation):** Product titles on the main dashboard cards and in the Version History modal header are now truncated with an ellipsis (...) if they are too long. This proactively prevents long titles from breaking the UI layout.
