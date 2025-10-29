@@ -72,7 +72,7 @@ async function getCroppedFile(imageFile: File, percentCrop: Crop): Promise<File>
 }
 
 const ProgressIndicator: React.FC<{ currentStep: number }> = ({ currentStep }) => {
-    const steps = ["The Basics", "Details & Images"];
+    const steps = ["Details", "List Product"];
     return (
         <div className="flex justify-between items-center px-5 py-3 border-b border-brand-dark/10">
             {steps.map((step, index) => {
@@ -107,7 +107,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const [categories, setCategories] = useState<string[]>([]);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [type, setType] = useState<'buy' | 'rent'>('buy');
-  const [quantity, setQuantity] = useState<number>(1);
+  const [quantity, setQuantity] = useState<number | ''>(1);
   const [price, setPrice] = useState('');
   const [sessionString, setSessionString] = useState('');
   const [images, setImages] = useState<CroppedImage[]>([]);
@@ -296,7 +296,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     const newErrors: Record<string, string> = {};
     if (!title.trim()) newErrors.title = 'Product Title is required.';
     if (!description.trim()) newErrors.description = 'Product Description is required.';
-    if (isNaN(quantity) || quantity < 1) newErrors.quantity = 'Quantity must be at least 1.';
+    if (quantity === '' || isNaN(Number(quantity)) || Number(quantity) < 1) newErrors.quantity = 'Quantity must be at least 1.';
     if (!price || parseFloat(price) <= 0) newErrors.price = 'A valid price is required.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -339,7 +339,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
         const productData = {
             user_id: userId, title, description,
             category: categories.length > 0 ? categories : null,
-            type, quantity_left: quantity, price: parseFloat(price),
+            type, quantity_left: Number(quantity), price: parseFloat(price),
             image_url: uploadedImageUrls,
             session: type === 'rent' ? sessionString.trim() : null,
         };
@@ -395,8 +395,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                                 type="number"
                                 placeholder="e.g. 1"
                                 value={quantity}
-                                onChange={e => setQuantity(parseInt(e.target.value, 10))}
-                                onBlur={() => { if (isNaN(quantity) || quantity < 1) setQuantity(1); }}
+                                onChange={e => setQuantity(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+                                onBlur={() => { if (quantity === '' || isNaN(Number(quantity)) || Number(quantity) < 1) setQuantity(1); }}
                                 className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`}
                                 min="1"
                                 required
@@ -409,22 +409,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             
             {step === 2 && (
                 <div className="space-y-4 animate-fade-in">
-                    <div>
-                        <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Type <span className="text-red-500">*</span></label>
-                        <div className="flex bg-brand-cream border border-brand-dark/20 rounded-lg p-1">
-                            <button type="button" onClick={() => setType('buy')} className={`w-1/2 py-2 rounded-md font-medium transition ${type === 'buy' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80 hover:bg-white/50'}`}>Buy</button>
-                            <button type="button" onClick={() => setType('rent')} className={`w-1/2 py-2 rounded-md font-medium transition ${type === 'rent' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80 hover:bg-white/50'}`}>Rent</button>
-                        </div>
-                    </div>
-
-                    {type === 'rent' && (
-                        <div className="animate-fade-in-fast">
-                            <label htmlFor="session" className="text-brand-dark/80 text-sm font-medium mb-1 block">Rental Session <span className="text-red-500">*</span></label>
-                            <input id="session" type="text" placeholder="e.g., per night" value={sessionString} onChange={e => setSessionString(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.session ? 'border-red-500' : 'border-gray-300'}`} required />
-                            {errors.session && <p className="text-red-500 text-xs mt-1">{errors.session}</p>}
-                        </div>
-                    )}
-
                     <div className="relative" ref={categoryRef}>
                         <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Categories (Recommended)</label>
                         <button type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 text-left flex justify-between items-center">
@@ -444,6 +428,22 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                             </div>
                         )}
                     </div>
+                    
+                    <div>
+                        <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Type <span className="text-red-500">*</span></label>
+                        <div className="flex bg-brand-cream border border-brand-dark/20 rounded-lg p-1">
+                            <button type="button" onClick={() => setType('buy')} className={`w-1/2 py-2 rounded-md font-medium transition ${type === 'buy' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80 hover:bg-white/50'}`}>Buy</button>
+                            <button type="button" onClick={() => setType('rent')} className={`w-1/2 py-2 rounded-md font-medium transition ${type === 'rent' ? 'bg-brand-accent text-white shadow' : 'text-brand-dark/80 hover:bg-white/50'}`}>Rent</button>
+                        </div>
+                    </div>
+
+                    {type === 'rent' && (
+                        <div className="animate-fade-in-fast">
+                            <label htmlFor="session" className="text-brand-dark/80 text-sm font-medium mb-1 block">Rental Session <span className="text-red-500">*</span></label>
+                            <input id="session" type="text" placeholder="e.g., per night" value={sessionString} onChange={e => setSessionString(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.session ? 'border-red-500' : 'border-gray-300'}`} required />
+                            {errors.session && <p className="text-red-500 text-xs mt-1">{errors.session}</p>}
+                        </div>
+                    )}
 
                     <div>
                       <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Images <span className="text-red-500">*</span></label>

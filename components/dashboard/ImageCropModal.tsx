@@ -20,6 +20,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
   const [loading, setLoading] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
+  const initialLoadDone = useRef(false);
 
   // Set initial state from props when modal opens for re-cropping
   useEffect(() => {
@@ -32,8 +33,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
         setActiveMode('square');
         setAspect(1);
     }
+    initialLoadDone.current = false; // Reset on new image
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialCropMode]);
+  }, [initialCropMode, imageSrc]);
 
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
@@ -66,38 +68,43 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
         };
         setPercentCrop(newPercentCrop);
     }
+    initialLoadDone.current = true;
   }
   
   const handleModeChange = (mode: CropMode, newAspect: number | undefined) => {
     setActiveMode(mode);
-    setAspect(newAspect); // For 'auto', this will be undefined to allow free resizing.
-
-    if (imgRef.current) {
-        const { width, height } = imgRef.current;
-        
-        // If the new mode is 'auto', we want the INITIAL crop to be a square (aspect 1).
-        // For other modes, we use their specific aspect.
-        const aspectToCenter = mode === 'auto' ? 1 : newAspect || (width / height);
-
-        const newCrop = centerCrop(
-            makeAspectCrop({ unit: '%', width: 90 }, aspectToCenter, width, height),
-            width, height
-        );
-        setPixelCrop(newCrop);
-        // Also set percent crop
-        const newPercentCrop = {
-            unit: '%' as const,
-            x: (newCrop.x / width) * 100,
-            y: (newCrop.y / height) * 100,
-            width: (newCrop.width / width) * 100,
-            height: (newCrop.height / height) * 100,
-        };
-        setPercentCrop(newPercentCrop);
-        if (modalContentRef.current) {
-            modalContentRef.current.scrollTop = 0;
-        }
-    }
+    setAspect(newAspect);
   };
+
+  // This effect runs when the aspect ratio changes, ensuring the crop is updated AFTER the aspect state is set.
+  useEffect(() => {
+    // We don't want this to run before the image has loaded and the initial crop is set.
+    if (!initialLoadDone.current || !imgRef.current) {
+      return;
+    }
+
+    const { width, height } = imgRef.current;
+    const aspectToCenter = activeMode === 'auto' ? 1 : aspect || (width / height);
+
+    const newCrop = centerCrop(
+        makeAspectCrop({ unit: '%', width: 90 }, aspectToCenter, width, height),
+        width, height
+    );
+    setPixelCrop(newCrop);
+    
+    const newPercentCrop = {
+        unit: '%' as const,
+        x: (newCrop.x / width) * 100,
+        y: (newCrop.y / height) * 100,
+        width: (newCrop.width / width) * 100,
+        height: (newCrop.height / height) * 100,
+    };
+    setPercentCrop(newPercentCrop);
+
+    if (modalContentRef.current) {
+        modalContentRef.current.scrollTop = 0;
+    }
+  }, [aspect, activeMode]);
 
   const handleCrop = async () => {
     if (!imgRef.current || !pixelCrop || !pixelCrop.width || !pixelCrop.height || !percentCrop) {
