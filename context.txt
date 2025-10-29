@@ -293,3 +293,24 @@ The product editing workflow has been updated to allow sellers to submit edits f
 3.  **"History" Button for Unapproved Edits:** A "History" button will now appear on your approved product cards *only if* you have a newer version that is pending approval or has been rejected. This button is your gateway to viewing and managing those unapproved edits.
 4.  **Backend Functionality:** The core database function `get_latest_products_for_user` has been updated to prioritize showing the approved version, ensuring your dashboard reflects what customers see. A secondary function, `get_groups_with_pending_edits`, has been created to efficiently check which of your products have unapproved edits.
 5.  **Reverting:** The revert functionality in the Version History modal works as before. You can revert to the approved version, which will delete any newer, unapproved edits.
+
+---
+**UI Tweak: Clarify Version History Highlighting**
+
+**Overview:**
+To improve clarity in the Version History modal, the UI has been updated to visually distinguish both the live, approved version and the chronologically latest version of a product.
+
+**Behavior & Visual Change:**
+1.  **Highlight Approved Version:** The container for the approved version is now highlighted with a distinct green border and a light green background.
+2.  **"Live" Badge:** A "Live" badge is displayed next to the version number of the approved item.
+3.  **Consistent "Latest" Tag:** The "(Latest)" tag is now **always** displayed on the version with the highest edit count (the most recent one), regardless of its approval status. This means a single version can be marked as both "Live" and "(Latest)" if the approved version is the most recent, or they can be two separate versions.
+
+---
+**UI Refinement: Finalized Version History View**
+
+**Overview:**
+The Version History modal has been finalized to provide maximum clarity to sellers. This update ensures that both the live (approved) version and the chronologically latest version are always clearly and distinctly identified.
+
+**Behavior & Visual Changes:**
+1.  **Approved Version Highlighting:** The approved version is consistently highlighted with a green border and background, and labeled with a "Live" badge.
+2.  **Latest Version Tag:** The version with the highest `edit_count` is now always marked with a "(Latest)" tag, regardless of its approval status. This provides an unambiguous chronological reference point for the seller.

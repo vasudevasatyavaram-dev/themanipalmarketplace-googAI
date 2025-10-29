@@ -98,19 +98,34 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
           ) : (
             <div className="space-y-4">
               {versions.map((version, index) => {
+                const isApproved = version.approval_status === 'approved';
                 const isRejected = version.approval_status === 'rejected';
+                const isLatest = index === 0;
+
+                let versionClasses = 'p-4 rounded-lg border transition-all';
+                if (isApproved) {
+                    versionClasses += ' bg-green-50 border-green-400 shadow';
+                } else if (isRejected) {
+                    versionClasses += ' opacity-60 bg-red-50 border-red-200';
+                } else if (isLatest) {
+                    versionClasses += ' bg-brand-cream border-brand-accent/50 shadow';
+                } else {
+                    versionClasses += ' bg-white border-gray-200';
+                }
+                
                 return (
-                  <div key={version.id} className={`p-4 rounded-lg border transition-all ${isRejected ? 'opacity-60 bg-red-50 border-red-200' : (index === 0 ? 'bg-brand-cream border-brand-accent/50 shadow' : 'bg-white border-gray-200')}`}>
+                  <div key={version.id} className={versionClasses}>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                       <div>
-                        <h3 className="font-bold text-lg text-brand-dark flex items-center">
-                          Version {version.edit_count} 
-                          {index === 0 && <span className="text-sm font-semibold text-brand-accent ml-2">(Latest)</span>}
-                          {isRejected && <span className="text-xs font-semibold text-red-800 bg-red-100 px-2 py-0.5 rounded-full ml-2">Rejected</span>}
+                        <h3 className="font-bold text-lg text-brand-dark flex items-center flex-wrap gap-x-2 gap-y-1">
+                          <span>Version {version.edit_count}</span>
+                          {isApproved && <span className="text-xs font-semibold text-green-800 bg-green-200 px-2 py-0.5 rounded-full">Live</span>}
+                          {isLatest && <span className="text-sm font-semibold text-brand-accent">(Latest)</span>}
+                          {isRejected && <span className="text-xs font-semibold text-red-800 bg-red-100 px-2 py-0.5 rounded-full">Rejected</span>}
                         </h3>
                         <p className="text-xs text-brand-dark/60 mt-1">Created on: {formatDate(version.created_at)}</p>
                       </div>
-                      {index > 0 && (
+                      {!isLatest && (
                         <button 
                           onClick={() => handleRevert(version)}
                           disabled={isRejected}
