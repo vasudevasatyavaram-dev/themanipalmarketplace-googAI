@@ -392,7 +392,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             
             <div>
               <label htmlFor="title" className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Title <span className="text-red-500">*</span></label>
-              <input id="title" type="text" placeholder="e.g., Apple AirPods Pro (2nd Gen)" value={title} onChange={e => setTitle(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.title ? 'border-red-500' : 'border-gray-300'}`} required />
+              <input id="title" type="text" placeholder="Enter product title " value={title} onChange={e => setTitle(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.title ? 'border-red-500' : 'border-gray-300'}`} required />
               {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
             </div>
             
@@ -401,13 +401,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                     <label htmlFor="description" className="text-brand-dark/80 text-sm font-medium">Product Description <span className="text-red-500">*</span></label>
                     <button type="button" onClick={handleAddBulletPoint} className="text-xs font-semibold text-brand-accent hover:underline">Add Bullet Point</button>
                 </div>
-              <textarea ref={descriptionRef} id="description" placeholder="Describe the item's condition, features, and any other relevant details." value={description} onChange={e => setDescription(e.target.value)} onKeyDown={handleDescriptionKeyDown} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.description ? 'border-red-500' : 'border-gray-300'}`} rows={3} required></textarea>
+              <textarea ref={descriptionRef} id="description" placeholder="Condition, features, flaws, etc" value={description} onChange={e => setDescription(e.target.value)} onKeyDown={handleDescriptionKeyDown} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.description ? 'border-red-500' : 'border-gray-300'}`} rows={3} required></textarea>
               {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative" ref={categoryRef}>
-                <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Categories (Recommended)</label>
+                <label className="text-brand-dark/80 text-sm font-medium mb-1 block">Categories (Not Required)</label>
                 <button type="button" onClick={() => setIsCategoryOpen(!isCategoryOpen)} className="w-full bg-white px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 text-left flex justify-between items-center">
                   <span className={`truncate ${categories.length > 0 ? 'text-brand-dark' : 'text-gray-400'}`}>
                     {categories.length > 0 ? categories.join(', ') : 'Select categories...'}
@@ -437,7 +437,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="price" className="text-brand-dark/80 text-sm font-medium mb-1 block">Price (₹) <span className="text-red-500">*</span></label>
-                <input id="price" type="number" placeholder="e.g. 1500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.price ? 'border-red-500' : 'border-gray-300'}`} min="1" required />
+                <input id="price" type="number" placeholder="700" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.price ? 'border-red-500' : 'border-gray-300'}`} min="1" required />
                 {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
               </div>
               <div>
