@@ -38,18 +38,32 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [productForHistory, setProductForHistory] = useState<Product | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [groupsWithPendingEdits, setGroupsWithPendingEdits] = useState<string[]>([]);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc('get_latest_products_for_user', {
-      p_user_id: session.user.id
-    });
+    
+    // Fetch products and pending edits in parallel
+    const [productsResult, pendingEditsResult] = await Promise.all([
+      supabase.rpc('get_latest_products_for_user', { p_user_id: session.user.id }),
+      supabase.rpc('get_groups_with_pending_edits', { p_user_id: session.user.id })
+    ]);
 
-    if (error) {
-      setError(error.message);
-    } else if (data) {
-      setProducts(data as Product[]);
+    const { data: productsData, error: productsError } = productsResult;
+    if (productsError) {
+      setError(productsError.message);
+    } else if (productsData) {
+      setProducts(productsData as Product[]);
     }
+
+    const { data: pendingEditsData, error: pendingEditsError } = pendingEditsResult;
+    if (pendingEditsError) {
+      // Don't block the UI for this, just log it
+      console.error('Error fetching pending edits:', pendingEditsError.message);
+    } else if (pendingEditsData) {
+      setGroupsWithPendingEdits(pendingEditsData.map(item => item.product_group_id_pending));
+    }
+    
     setLoading(false);
   }, [session.user.id]);
 
@@ -211,7 +225,13 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
                 <p className="text-center text-red-500">{error}</p>
               ) : (
                 <>
-                  <ProductList products={products} onEdit={openEditModal} onDelete={handleDeleteProduct} onHistory={openHistoryModal} />
+                  <ProductList 
+                    products={products} 
+                    onEdit={openEditModal} 
+                    onDelete={handleDeleteProduct} 
+                    onHistory={openHistoryModal}
+                    groupsWithPendingEdits={groupsWithPendingEdits}
+                  />
                   <Analytics products={products} onNavigate={setCurrentView} />
                 </>
               )}

@@ -280,3 +280,16 @@ To provide sellers with clear and satisfying visual confirmation that their prod
 3.  **Elevated Shadow:** The card is given a slightly more pronounced, permanent box-shadow, making it appear "lifted" and more important on the page, while still enhancing on hover.
 
 These changes make it easy for sellers to scan their dashboard and identify which products are active on the marketplace, providing positive reinforcement and improving clarity.
+
+---
+**Feature: Editing Live (Approved) Products**
+
+**Overview:**
+The product editing workflow has been updated to allow sellers to submit edits for their live, approved products. When an approved product is edited, the live version remains visible on the marketplace, while the new edit is submitted for approval. This ensures there is no downtime for the seller's listing.
+
+**Behavior & Visual Changes:**
+1.  **"Edit" Button on Approved Products:** The "Edit" button is now visible on all approved product cards. Clicking it opens the edit modal, pre-filled with the live product's data.
+2.  **Dashboard Display Logic:** Your dashboard will now always display the **live, approved version** of a product if one exists. Any pending edits you've submitted will not replace the live version on your main dashboard view.
+3.  **"History" Button for Unapproved Edits:** A "History" button will now appear on your approved product cards *only if* you have a newer version that is pending approval or has been rejected. This button is your gateway to viewing and managing those unapproved edits.
+4.  **Backend Functionality:** The core database function `get_latest_products_for_user` has been updated to prioritize showing the approved version, ensuring your dashboard reflects what customers see. A secondary function, `get_groups_with_pending_edits`, has been created to efficiently check which of your products have unapproved edits.
+5.  **Reverting:** The revert functionality in the Version History modal works as before. You can revert to the approved version, which will delete any newer, unapproved edits.

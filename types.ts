@@ -93,6 +93,14 @@ export interface Database {
         }
         Returns: Database["public"]["Tables"]["products"]["Row"][]
       }
+      get_groups_with_pending_edits: {
+        Args: {
+          p_user_id: string;
+        };
+        Returns: {
+          product_group_id_pending: string;
+        }[];
+      }
     }
     Enums: {
       [_ in never]: never
