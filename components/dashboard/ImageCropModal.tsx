@@ -107,21 +107,37 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
   }, [aspect, activeMode]);
 
   const handleCrop = async () => {
-    if (!imgRef.current || !pixelCrop || !pixelCrop.width || !pixelCrop.height || !percentCrop) {
+    if (!imgRef.current || !pixelCrop || !pixelCrop.width || !pixelCrop.height) {
       return;
     }
     setLoading(true);
 
+    const imageElement = imgRef.current;
+
+    // FIX: Always calculate the percentage crop from the current pixelCrop state
+    // and the image's rendered dimensions. This ensures that what we save
+    // is an exact representation of what the user saw and approved.
+    const finalPercentCrop: Crop = {
+      unit: '%',
+      x: (pixelCrop.x / imageElement.width) * 100,
+      y: (pixelCrop.y / imageElement.height) * 100,
+      width: (pixelCrop.width / imageElement.width) * 100,
+      height: (pixelCrop.height / imageElement.height) * 100,
+    };
+
     const canvas = document.createElement('canvas');
-    const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
-    const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
+    const scaleX = imageElement.naturalWidth / imageElement.width;
+    const scaleY = imageElement.naturalHeight / imageElement.height;
     canvas.width = pixelCrop.width * scaleX;
     canvas.height = pixelCrop.height * scaleY;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      setLoading(false);
+      return;
+    }
 
     ctx.drawImage(
-      imgRef.current,
+      imageElement,
       pixelCrop.x * scaleX,
       pixelCrop.y * scaleY,
       pixelCrop.width * scaleX,
@@ -135,7 +151,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
     canvas.toBlob((blob) => {
       if (blob) {
         const croppedFile = new File([blob], 'cropped_image.jpeg', { type: 'image/jpeg' });
-        onCropComplete(croppedFile, percentCrop, activeMode);
+        onCropComplete(croppedFile, finalPercentCrop, activeMode);
       }
       setLoading(false);
     }, 'image/jpeg', 0.95);
