@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import ReactCrop, { type Crop } from 'react-image-crop';
 import Spinner from '../ui/Spinner';
 
 type CropMode = 'auto' | 'square' | 'portrait' | 'landscape';
@@ -12,6 +12,50 @@ interface ImageCropModalProps {
   initialCropMode?: CropMode;
 }
 
+/**
+ * Creates a centered, percentage-based crop that covers the maximum
+ * possible area of the image for a given aspect ratio.
+ * @param imageWidth The natural width of the image.
+ * @param imageHeight The natural height of the image.
+ * @param aspect The desired aspect ratio (e.g., 1 for square, 16/9 for landscape).
+ * @returns A Crop object with percentage units.
+ */
+function createMaxAreaPercentCrop(
+  imageWidth: number,
+  imageHeight: number,
+  aspect: number
+): Crop {
+  const imageAspect = imageWidth / imageHeight;
+
+  let width: number;
+  let height: number;
+
+  if (imageAspect > aspect) {
+    // Image is wider than the crop aspect (letterboxed)
+    // The height is the constraining dimension
+    height = 100;
+    width = (imageHeight * aspect / imageWidth) * 100;
+  } else {
+    // Image is taller than or same aspect as the crop (pillarboxed)
+    // The width is the constraining dimension
+    width = 100;
+    height = (imageWidth / aspect / imageHeight) * 100;
+  }
+
+  // Center the crop
+  const x = (100 - width) / 2;
+  const y = (100 - height) / 2;
+
+  return {
+    unit: '%',
+    x,
+    y,
+    width,
+    height,
+  };
+}
+
+
 const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCropComplete, initialCrop, initialCropMode }) => {
   const [crop, setCrop] = useState<Crop>();
   const [aspect, setAspect] = useState<number | undefined>(1);
@@ -19,9 +63,10 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
   const [loading, setLoading] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
-  const initialLoadDone = useRef(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isInitialCropSet, setIsInitialCropSet] = useState(false);
 
-  // Set initial state from props when modal opens for re-cropping
+  // Set initial mode from props when modal opens for a new image or re-cropping
   useEffect(() => {
     if (initialCropMode) {
         const preset = aspectPresets.find(p => p.name.toLowerCase() === initialCropMode);
@@ -32,66 +77,48 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
         setActiveMode('square');
         setAspect(1);
     }
-    initialLoadDone.current = false; // Reset on new image
+    // Reset flags whenever a new image or props comes in.
+    setIsInitialCropSet(false); 
+    setIsImageLoaded(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialCropMode, imageSrc]);
 
-
-  function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
-    const { width, height } = e.currentTarget;
-    
-    if (initialCrop && initialCrop.unit === '%') {
-        setCrop(initialCrop);
-    } else {
-        const newCrop = centerCrop(
-            makeAspectCrop({ unit: '%', width: 90 }, aspect || 1, width, height),
-            width, height
-        );
-        // Convert to percentage crop to store as the source of truth
-        setCrop({
-            unit: '%',
-            x: (newCrop.x / width) * 100,
-            y: (newCrop.y / height) * 100,
-            width: (newCrop.width / width) * 100,
-            height: (newCrop.height / height) * 100,
-        });
-    }
-    initialLoadDone.current = true;
+  function onImageLoad() {
+    setIsImageLoaded(true);
   }
+
+  // This master effect is the single source of truth for calculating and setting the crop.
+  // It runs when the image loads, when the mode changes, or when restoring an initial crop.
+  useEffect(() => {
+    if (!isImageLoaded || !imgRef.current) {
+        return;
+    }
+
+    // This is a re-crop, and we haven't set the initial crop from props yet.
+    if (initialCrop && !isInitialCropSet) {
+        setCrop(initialCrop);
+        setIsInitialCropSet(true); // Mark as done, so mode changes can recalculate.
+        return;
+    }
+    
+    // If we've already set the initial crop, a change in aspect/mode means the user clicked a button.
+    // Or, if there's no initialCrop, this is a new image, so we calculate the default.
+    const { naturalWidth, naturalHeight } = imgRef.current;
+    
+    // For 'auto' mode, we default to a square crop initially, then allow free-form resizing.
+    const aspectToUse = aspect || 1; 
+
+    setCrop(createMaxAreaPercentCrop(naturalWidth, naturalHeight, aspectToUse));
+    
+  }, [isImageLoaded, aspect, activeMode, initialCrop, isInitialCropSet]);
   
   const handleModeChange = (mode: CropMode, newAspect: number | undefined) => {
     setActiveMode(mode);
     setAspect(newAspect);
-  };
-
-  // This effect runs when the aspect ratio changes, ensuring the crop is updated AFTER the aspect state is set.
-  useEffect(() => {
-    if (!initialLoadDone.current || !imgRef.current) {
-      return;
-    }
-
-    const { width, height } = imgRef.current;
-    const aspectToCenter = activeMode === 'auto' ? 1 : aspect || (width / height);
-
-    const newPixelCrop = centerCrop(
-        makeAspectCrop({ unit: '%', width: 90 }, aspectToCenter, width, height),
-        width, height
-    );
-    
-    // Convert to percentage crop to store as the source of truth
-    setCrop({
-        unit: '%',
-        x: (newPixelCrop.x / width) * 100,
-        y: (newPixelCrop.y / height) * 100,
-        width: (newPixelCrop.width / width) * 100,
-        height: (newPixelCrop.height / height) * 100,
-    });
-
-
     if (modalContentRef.current) {
         modalContentRef.current.scrollTop = 0;
     }
-  }, [aspect, activeMode]);
+  };
 
   const handleCrop = async () => {
     const imageElement = imgRef.current;
@@ -103,17 +130,15 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
     // Convert percentage crop to pixel crop at the last moment, using stable dimensions
     const pixelCrop: Crop = {
         unit: 'px',
-        x: (crop.x * imageElement.width) / 100,
-        y: (crop.y * imageElement.height) / 100,
-        width: (crop.width * imageElement.width) / 100,
-        height: (crop.height * imageElement.height) / 100,
+        x: (crop.x * imageElement.naturalWidth) / 100,
+        y: (crop.y * imageElement.naturalHeight) / 100,
+        width: (crop.width * imageElement.naturalWidth) / 100,
+        height: (crop.height * imageElement.naturalHeight) / 100,
     };
 
     const canvas = document.createElement('canvas');
-    const scaleX = imageElement.naturalWidth / imageElement.width;
-    const scaleY = imageElement.naturalHeight / imageElement.height;
-    canvas.width = pixelCrop.width * scaleX;
-    canvas.height = pixelCrop.height * scaleY;
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       setLoading(false);
@@ -122,10 +147,10 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
 
     ctx.drawImage(
       imageElement,
-      pixelCrop.x * scaleX,
-      pixelCrop.y * scaleY,
-      pixelCrop.width * scaleX,
-      pixelCrop.height * scaleY,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
       0,
       0,
       canvas.width,
@@ -192,7 +217,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
         </div>
         <div className="p-3 border-t border-brand-dark/10 flex justify-end gap-3 flex-shrink-0">
           <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-5 rounded-lg hover:bg-gray-300 transition text-sm">Cancel</button>
-          <button onClick={handleCrop} disabled={loading} className="bg-brand-accent text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[100px] text-sm">
+          <button onClick={handleCrop} disabled={loading || !isImageLoaded} className="bg-brand-accent text-white font-bold py-2 px-5 rounded-lg shadow-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center min-w-[100px] text-sm">
             {loading ? <Spinner /> : 'Apply Crop'}
           </button>
         </div>
