@@ -100,6 +100,7 @@ export interface Database {
         Returns: {
           product_group_id: string;
           latest_status: string;
+          reject_explanation: string | null;
         }[];
       }
     }

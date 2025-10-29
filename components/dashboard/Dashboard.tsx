@@ -25,6 +25,10 @@ const InventoryIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" 
 const SalesIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent/70"><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93l1.41 1.41"></path><path d="M17.66 17.66l1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M6.34 17.66l-1.41 1.41"></path><path d="M19.07 4.93l-1.41 1.41"></path><circle cx="12" cy="12" r="4"></circle></svg>);
 
 type View = 'dashboard' | 'best_practices';
+export interface UnapprovedEditStatus {
+  status: string;
+  explanation: string | null;
+}
 
 const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -38,7 +42,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
   const [productForHistory, setProductForHistory] = useState<Product | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('dashboard');
-  const [unapprovedEditsStatus, setUnapprovedEditsStatus] = useState<Map<string, string>>(new Map());
+  const [unapprovedEditsStatus, setUnapprovedEditsStatus] = useState<Map<string, UnapprovedEditStatus>>(new Map());
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -59,8 +63,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
     if (unapprovedEditsError) {
       console.error('Error fetching unapproved edits:', unapprovedEditsError.message);
     } else if (unapprovedEditsData) {
-      // FIX: Explicitly type the Map constructor to ensure it is created as Map<string, string>.
-      const statusMap = new Map<string, string>(unapprovedEditsData.map(item => [item.product_group_id, item.latest_status]));
+      const statusMap = new Map<string, UnapprovedEditStatus>(unapprovedEditsData.map(item => [item.product_group_id, { status: item.latest_status, explanation: item.reject_explanation }]));
       setUnapprovedEditsStatus(statusMap);
     }
     

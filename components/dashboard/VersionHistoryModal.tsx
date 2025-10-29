@@ -106,7 +106,7 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
                 if (isApproved) {
                     versionClasses += ' bg-green-50 border-green-400 shadow';
                 } else if (isRejected) {
-                    versionClasses += ' opacity-60 bg-red-50 border-red-200';
+                    versionClasses += ' bg-red-50 border-red-200';
                 } else if (isLatest) {
                     versionClasses += ' bg-brand-cream border-brand-accent/50 shadow';
                 } else {
@@ -116,18 +116,18 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
                 return (
                   <div key={version.id} className={versionClasses}>
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                      <div>
+                      <div className={isRejected ? 'opacity-60' : ''}>
                         <h3 className="font-bold text-lg text-brand-dark flex items-center flex-wrap gap-x-3 gap-y-1">
-                          <span>Version {version.edit_count}</span>
+                          <span className={isRejected ? 'opacity-100' : ''}>Version {version.edit_count}</span>
                           {isApproved && <span className="text-xs font-semibold text-green-800 bg-green-200 px-2 py-0.5 rounded-full">Live</span>}
                           {isLatest && <span className="text-sm font-semibold text-brand-accent">(Latest)</span>}
                           {isRejected && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 opacity-100">
                                 <span className="text-xs font-semibold text-red-800 bg-red-100 px-2 py-0.5 rounded-full">Rejected</span>
                                 {version.reject_explanation && (
                                      <div className="relative group/tooltip">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-700 cursor-pointer"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                                        <div className="absolute bottom-full mb-2 w-48 bg-brand-dark text-white text-xs rounded-lg py-2 px-3 right-1/2 translate-x-1/2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-300 pointer-events-none z-10 shadow-lg">
+                                        <div className="absolute bottom-full mb-2 w-48 bg-brand-dark text-white text-xs rounded-lg py-2 px-3 right-1/2 translate-x-1/2 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-300 pointer-events-none z-20 shadow-lg">
                                             {version.reject_explanation}
                                             <svg className="absolute text-brand-dark h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255"><polygon className="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
                                         </div>
@@ -149,7 +149,7 @@ const VersionHistoryModal: React.FC<VersionHistoryModalProps> = ({ isOpen, onClo
                         </button>
                       )}
                     </div>
-                    <div className="mt-3 pt-3 border-t border-brand-dark/10 text-sm space-y-1">
+                    <div className={`mt-3 pt-3 border-t border-brand-dark/10 text-sm space-y-1 ${isRejected ? 'opacity-60' : ''}`}>
                       <p><span className="font-semibold">Title:</span> {version.title}</p>
                       <p>
                           <span className="font-semibold">{version.type === 'rent' ? 'Rental Price:' : 'Price:'}</span>
