@@ -481,3 +481,6 @@ The Google OAuth `redirectTo` URL has been updated from the dynamic `window.loca
 
 **Implementation:**
 The `redirectTo` option in the `signInWithOAuth` function in `Login.tsx` is now set to `'http://themanipalmarketplace-seller.vercel.app'`. This ensures that all users are redirected to this specific URL after Google authentication, regardless of the environment they are logging in from.
+
+---
+The crop settings were redone so that the default crop was also working

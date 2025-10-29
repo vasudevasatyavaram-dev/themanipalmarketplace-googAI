@@ -13,8 +13,7 @@ interface ImageCropModalProps {
 }
 
 const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCropComplete, initialCrop, initialCropMode }) => {
-  const [pixelCrop, setPixelCrop] = useState<Crop>();
-  const [percentCrop, setPercentCrop] = useState<Crop>();
+  const [crop, setCrop] = useState<Crop>();
   const [aspect, setAspect] = useState<number | undefined>(1);
   const [activeMode, setActiveMode] = useState<CropMode>('square');
   const [loading, setLoading] = useState(false);
@@ -42,31 +41,20 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
     const { width, height } = e.currentTarget;
     
     if (initialCrop && initialCrop.unit === '%') {
-        setPercentCrop(initialCrop);
-        // Convert initial percentage crop to pixels for ReactCrop
-        const newPixelCrop = {
-            unit: 'px' as const,
-            x: (initialCrop.x * width) / 100,
-            y: (initialCrop.y * height) / 100,
-            width: (initialCrop.width * width) / 100,
-            height: (initialCrop.height * height) / 100,
-        };
-        setPixelCrop(newPixelCrop);
+        setCrop(initialCrop);
     } else {
         const newCrop = centerCrop(
             makeAspectCrop({ unit: '%', width: 90 }, aspect || 1, width, height),
             width, height
         );
-        setPixelCrop(newCrop);
-        // Convert this to percent for consistency
-        const newPercentCrop = {
-            unit: '%' as const,
+        // Convert to percentage crop to store as the source of truth
+        setCrop({
+            unit: '%',
             x: (newCrop.x / width) * 100,
             y: (newCrop.y / height) * 100,
             width: (newCrop.width / width) * 100,
             height: (newCrop.height / height) * 100,
-        };
-        setPercentCrop(newPercentCrop);
+        });
     }
     initialLoadDone.current = true;
   }
@@ -78,7 +66,6 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
 
   // This effect runs when the aspect ratio changes, ensuring the crop is updated AFTER the aspect state is set.
   useEffect(() => {
-    // We don't want this to run before the image has loaded and the initial crop is set.
     if (!initialLoadDone.current || !imgRef.current) {
       return;
     }
@@ -86,20 +73,20 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
     const { width, height } = imgRef.current;
     const aspectToCenter = activeMode === 'auto' ? 1 : aspect || (width / height);
 
-    const newCrop = centerCrop(
+    const newPixelCrop = centerCrop(
         makeAspectCrop({ unit: '%', width: 90 }, aspectToCenter, width, height),
         width, height
     );
-    setPixelCrop(newCrop);
     
-    const newPercentCrop = {
-        unit: '%' as const,
-        x: (newCrop.x / width) * 100,
-        y: (newCrop.y / height) * 100,
-        width: (newCrop.width / width) * 100,
-        height: (newCrop.height / height) * 100,
-    };
-    setPercentCrop(newPercentCrop);
+    // Convert to percentage crop to store as the source of truth
+    setCrop({
+        unit: '%',
+        x: (newPixelCrop.x / width) * 100,
+        y: (newPixelCrop.y / height) * 100,
+        width: (newPixelCrop.width / width) * 100,
+        height: (newPixelCrop.height / height) * 100,
+    });
+
 
     if (modalContentRef.current) {
         modalContentRef.current.scrollTop = 0;
@@ -107,22 +94,19 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
   }, [aspect, activeMode]);
 
   const handleCrop = async () => {
-    if (!imgRef.current || !pixelCrop || !pixelCrop.width || !pixelCrop.height) {
+    const imageElement = imgRef.current;
+    if (!imageElement || !crop || !crop.width || !crop.height) {
       return;
     }
     setLoading(true);
 
-    const imageElement = imgRef.current;
-
-    // FIX: Always calculate the percentage crop from the current pixelCrop state
-    // and the image's rendered dimensions. This ensures that what we save
-    // is an exact representation of what the user saw and approved.
-    const finalPercentCrop: Crop = {
-      unit: '%',
-      x: (pixelCrop.x / imageElement.width) * 100,
-      y: (pixelCrop.y / imageElement.height) * 100,
-      width: (pixelCrop.width / imageElement.width) * 100,
-      height: (pixelCrop.height / imageElement.height) * 100,
+    // Convert percentage crop to pixel crop at the last moment, using stable dimensions
+    const pixelCrop: Crop = {
+        unit: 'px',
+        x: (crop.x * imageElement.width) / 100,
+        y: (crop.y * imageElement.height) / 100,
+        width: (crop.width * imageElement.width) / 100,
+        height: (crop.height * imageElement.height) / 100,
     };
 
     const canvas = document.createElement('canvas');
@@ -151,7 +135,8 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
     canvas.toBlob((blob) => {
       if (blob) {
         const croppedFile = new File([blob], 'cropped_image.jpeg', { type: 'image/jpeg' });
-        onCropComplete(croppedFile, finalPercentCrop, activeMode);
+        // Pass the canonical percentage crop data onward
+        onCropComplete(croppedFile, crop, activeMode);
       }
       setLoading(false);
     }, 'image/jpeg', 0.95);
@@ -194,11 +179,12 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({ imageSrc, onClose, onCr
           </div>
           <div className="bg-gray-800 p-2 rounded-lg flex justify-center">
             <ReactCrop
-              crop={pixelCrop}
-              onChange={(c, pc) => { setPixelCrop(c); setPercentCrop(pc); }}
+              crop={crop}
+              onChange={(_, percentCrop) => setCrop(percentCrop)}
               aspect={aspect}
               minWidth={100}
               minHeight={100}
+              ruleOfThirds
             >
               <img ref={imgRef} src={imageSrc} onLoad={onImageLoad} alt="Crop preview" className="max-h-[65vh] object-contain" />
             </ReactCrop>
