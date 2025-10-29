@@ -484,3 +484,9 @@ The `redirectTo` option in the `signInWithOAuth` function in `Login.tsx` is now 
 
 ---
 The crop settings were redone so that the default crop was also working
+---
+**UI/UX Overhaul: Analytics & Best Practices**
+
+**Overview:**
+1.  **Analytics Lock Screen:** Improved the "locked" state of the Analytics section for new sellers. A larger, more prominent lock icon with the brand's accent color has been introduced to make the call-to-action clearer and more visually appealing.
+2.  **Best Practices Redesign:** The "Best Practices" guide has been completely redesigned from a simple text article into a modern, engaging, card-based layout. Each best practice is now presented in its own card with a unique icon, title, and clear bullet points, making the information much easier to scan, digest, and remember. This visual overhaul breaks the monotony and significantly enhances the user experience.
