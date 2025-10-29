@@ -72,7 +72,7 @@ async function getCroppedFile(imageFile: File, percentCrop: Crop): Promise<File>
 }
 
 const ProgressIndicator: React.FC<{ currentStep: number }> = ({ currentStep }) => {
-    const steps = ["The Basics", "Details & Visuals"];
+    const steps = ["The Basics", "Details & Images"];
     return (
         <div className="flex justify-between items-center px-5 py-3 border-b border-brand-dark/10">
             {steps.map((step, index) => {
@@ -107,7 +107,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
   const [categories, setCategories] = useState<string[]>([]);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [type, setType] = useState<'buy' | 'rent'>('buy');
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState<number>(1);
   const [price, setPrice] = useState('');
   const [sessionString, setSessionString] = useState('');
   const [images, setImages] = useState<CroppedImage[]>([]);
@@ -296,7 +296,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
     const newErrors: Record<string, string> = {};
     if (!title.trim()) newErrors.title = 'Product Title is required.';
     if (!description.trim()) newErrors.description = 'Product Description is required.';
-    if (quantity < 1) newErrors.quantity = 'Quantity must be at least 1.';
+    if (isNaN(quantity) || quantity < 1) newErrors.quantity = 'Quantity must be at least 1.';
     if (!price || parseFloat(price) <= 0) newErrors.price = 'A valid price is required.';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -390,7 +390,17 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                         </div>
                         <div>
                             <label htmlFor="quantity" className="text-brand-dark/80 text-sm font-medium mb-1 block">Quantity <span className="text-red-500">*</span></label>
-                            <input id="quantity" type="number" placeholder="e.g. 1" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`} min="1" required />
+                            <input
+                                id="quantity"
+                                type="number"
+                                placeholder="e.g. 1"
+                                value={quantity}
+                                onChange={e => setQuantity(parseInt(e.target.value, 10))}
+                                onBlur={() => { if (isNaN(quantity) || quantity < 1) setQuantity(1); }}
+                                className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`}
+                                min="1"
+                                required
+                            />
                             {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity}</p>}
                         </div>
                     </div>
@@ -481,7 +491,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                 )}
             </div>
             <div>
-              <button type="button" onClick={handleClose} className="bg-transparent text-gray-800 font-bold py-2.5 px-6 rounded-lg hover:bg-gray-200 transition">Cancel</button>
               {step < 2 ? (
                 <button type="button" onClick={handleNext} className="bg-brand-accent text-white font-bold py-2.5 px-6 rounded-lg shadow-lg hover:opacity-90 transition">Next</button>
               ) : (

@@ -116,7 +116,17 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
               </div>
               <div>
                   <label htmlFor={`${idPrefix}quantity`} className="text-brand-dark/80 text-sm font-medium mb-1 block">Quantity <span className="text-red-500">*</span></label>
-                  <input id={`${idPrefix}quantity`} type="number" placeholder="e.g. 1" value={quantity} onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`} min="1" required />
+                  <input
+                    id={`${idPrefix}quantity`}
+                    type="number"
+                    placeholder="e.g. 1"
+                    value={quantity}
+                    onChange={e => setQuantity(parseInt(e.target.value, 10))}
+                    onBlur={() => { if (isNaN(quantity) || quantity < 1) setQuantity(1); }}
+                    className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`}
+                    min="1"
+                    required
+                  />
                   {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity}</p>}
               </div>
             </div>

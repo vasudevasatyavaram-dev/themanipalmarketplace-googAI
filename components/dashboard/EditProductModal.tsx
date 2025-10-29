@@ -323,6 +323,9 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     if (type === 'rent' && !sessionString.trim()) {
       newErrors.session = 'Rental Session is required for rentals.';
     }
+    if (isNaN(quantity) || quantity < 1) {
+        newErrors.quantity = 'Quantity must be at least 1.';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
