@@ -115,7 +115,12 @@ const Login: React.FC = () => {
     const signInWithGoogle = async () => {
         setLoading(true);
         setError(null);
-        const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+        const { error } = await supabase.auth.signInWithOAuth({ 
+            provider: 'google',
+            options: {
+                redirectTo: 'http://themanipalmarketplace-seller.vercel.app',
+            },
+        });
         if (error) {
             setError(error.message);
             setLoading(false);

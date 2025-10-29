@@ -371,7 +371,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                 <div className="space-y-4 animate-fade-in">
                     <div>
                         <label htmlFor="title" className="text-brand-dark/80 text-sm font-medium mb-1 block">Product Title <span className="text-red-500">*</span></label>
-                        <input id="title" type="text" placeholder="e.g. Used Engineering Graphics Textbook" value={title} onChange={e => setTitle(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.title ? 'border-red-500' : 'border-gray-300'}`} required />
+                        <input id="title" type="text" placeholder="Enter product name" value={title} onChange={e => setTitle(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.title ? 'border-red-500' : 'border-gray-300'}`} required />
                         {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
                     </div>
                     <div>
@@ -379,13 +379,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                             <label htmlFor="description" className="text-brand-dark/80 text-sm font-medium">Product Description <span className="text-red-500">*</span></label>
                             <button type="button" onClick={handleAddBulletPoint} className="text-xs font-semibold text-brand-accent hover:underline">Add Bullet Point</button>
                         </div>
-                        <textarea ref={descriptionRef} id="description" placeholder="Describe the item's condition, features, any flaws, etc." value={description} onChange={e => setDescription(e.target.value)} onKeyDown={handleDescriptionKeyDown} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.description ? 'border-red-500' : 'border-gray-300'}`} rows={5} required></textarea>
+                        <textarea ref={descriptionRef} id="description" placeholder="Condition, features, any flaws, etc." value={description} onChange={e => setDescription(e.target.value)} onKeyDown={handleDescriptionKeyDown} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.description ? 'border-red-500' : 'border-gray-300'}`} rows={5} required></textarea>
                         {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="price" className="text-brand-dark/80 text-sm font-medium mb-1 block">Price (₹) <span className="text-red-500">*</span></label>
-                            <input id="price" type="number" placeholder="e.g. 500" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.price ? 'border-red-500' : 'border-gray-300'}`} min="1" required />
+                            <input id="price" type="number" placeholder="Enter value" value={price} onChange={e => setPrice(e.target.value)} onKeyDown={(e) => { if (e.key === '.') e.preventDefault(); }} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.price ? 'border-red-500' : 'border-gray-300'}`} min="1" required />
                             {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
                         </div>
                         <div>
@@ -420,7 +420,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onPr
                     {type === 'rent' && (
                         <div className="animate-fade-in-fast">
                             <label htmlFor="session" className="text-brand-dark/80 text-sm font-medium mb-1 block">Rental Session <span className="text-red-500">*</span></label>
-                            <input id="session" type="text" placeholder="e.g., per night, per semester" value={sessionString} onChange={e => setSessionString(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.session ? 'border-red-500' : 'border-gray-300'}`} required />
+                            <input id="session" type="text" placeholder="e.g., per night" value={sessionString} onChange={e => setSessionString(e.target.value)} className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.session ? 'border-red-500' : 'border-gray-300'}`} required />
                             {errors.session && <p className="text-red-500 text-xs mt-1">{errors.session}</p>}
                         </div>
                     )}

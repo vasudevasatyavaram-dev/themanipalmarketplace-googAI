@@ -462,3 +462,22 @@ To make listing an item less intimidating, the "Add Product" modal has been tran
     *   **Step 2: Details & Visuals:** Handles the "Buy/Rent" type, conditional "Rental Session," Categories, and image uploads.
 2.  **Progress Indicator:** A clear progress bar at the top of the modal shows the user which step they are on, reducing cognitive load.
 3.  **Guided Navigation:** "Next" and "Back" buttons allow for easy navigation. The form performs validation at each step. This approach presents a manageable number of fields at a time, making the form feel quick and easy to complete on a small screen.
+---
+**Auth Flow: Branding & Best Practices**
+
+**Overview:**
+To improve branding on the Google OAuth screen, the underlying cause has been identified and a code-level best practice has been implemented.
+
+**Explanation:**
+The "continue to [supabase_url]" text on the Google sign-in page is a security feature from Google that shows the official `Site URL` configured in the Supabase project. The permanent solution is to set a custom domain in the Supabase dashboard settings, which is an infrastructure change.
+
+**Code Improvement:**
+As a related best practice, the `signInWithOAuth` function in `Login.tsx` has been updated to include a `redirectTo` option, set to `window.location.origin`. This explicitly tells Supabase where to send the user after a successful login, making the authentication flow more robust and ready for a future custom domain.
+---
+**Auth Flow: Hardcoded Redirect URL**
+
+**Overview:**
+The Google OAuth `redirectTo` URL has been updated from the dynamic `window.location.origin` to a static, hardcoded URL as requested.
+
+**Implementation:**
+The `redirectTo` option in the `signInWithOAuth` function in `Login.tsx` is now set to `'http://themanipalmarketplace-seller.vercel.app'`. This ensures that all users are redirected to this specific URL after Google authentication, regardless of the environment they are logging in from.
