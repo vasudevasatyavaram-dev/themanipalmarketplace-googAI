@@ -48,28 +48,56 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
-    
-    const [productsResult, unapprovedEditsResult] = await Promise.all([
-      supabase.rpc('get_latest_products_for_user', { p_user_id: session.user.id }),
-      supabase.rpc('get_groups_with_unapproved_edits', { p_user_id: session.user.id })
-    ]);
+    setError(null);
 
-    const { data: productsData, error: productsError } = productsResult;
-    if (productsError) {
-      setError(productsError.message);
-    } else if (productsData) {
-      setProducts(productsData as Product[]);
-    }
+    try {
+      // Check and register user as a seller
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('is_seller')
+        .eq('user_id', session.user.id)
+        .single();
 
-    const { data: unapprovedEditsData, error: unapprovedEditsError } = unapprovedEditsResult;
-    if (unapprovedEditsError) {
-      console.error('Error fetching unapproved edits:', unapprovedEditsError.message);
-    } else if (unapprovedEditsData) {
-      const statusMap = new Map<string, UnapprovedEditStatus>(unapprovedEditsData.map(item => [item.product_group_id, { status: item.latest_status, explanation: item.reject_explanation }]));
-      setUnapprovedEditsStatus(statusMap);
+      // 'PGRST116' is the code for "exact one row not found", which is expected for new users.
+      if (roleError && roleError.code !== 'PGRST116') {
+        throw roleError;
+      }
+
+      if (!roleData || !roleData.is_seller) {
+        const { error: upsertError } = await supabase
+          .from('user_roles')
+          .upsert({ user_id: session.user.id, is_seller: true });
+
+        if (upsertError) throw upsertError;
+
+        setNotification("Welcome to the Seller Dashboard! You're now registered as a seller.");
+      }
+
+      // Proceed to fetch products
+      const [productsResult, unapprovedEditsResult] = await Promise.all([
+        supabase.rpc('get_latest_products_for_user', { p_user_id: session.user.id }),
+        supabase.rpc('get_groups_with_unapproved_edits', { p_user_id: session.user.id })
+      ]);
+
+      const { data: productsData, error: productsError } = productsResult;
+      if (productsError) {
+        throw productsError;
+      } else if (productsData) {
+        setProducts(productsData as Product[]);
+      }
+
+      const { data: unapprovedEditsData, error: unapprovedEditsError } = unapprovedEditsResult;
+      if (unapprovedEditsError) {
+        console.error('Error fetching unapproved edits:', unapprovedEditsError.message);
+      } else if (unapprovedEditsData) {
+        const statusMap = new Map<string, UnapprovedEditStatus>(unapprovedEditsData.map(item => [item.product_group_id, { status: item.latest_status, explanation: item.reject_explanation }]));
+        setUnapprovedEditsStatus(statusMap);
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   }, [session.user.id]);
 
   useEffect(() => {

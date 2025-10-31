@@ -116,6 +116,32 @@ export interface Database {
           }
         ]
       }
+      user_roles: {
+        Row: {
+          user_id: string
+          is_seller: boolean
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          is_seller?: boolean
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          is_seller?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
