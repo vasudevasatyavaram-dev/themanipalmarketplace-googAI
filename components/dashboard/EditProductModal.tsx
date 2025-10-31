@@ -6,6 +6,7 @@ import Spinner from '../ui/Spinner';
 import ImageCropModal from './ImageCropModal';
 import ProductFormFields from './ProductFormFields';
 import { type Crop } from 'react-image-crop';
+import { getCroppedFile } from '../../services/imageUtils';
 
 interface EditProductModalProps {
   isOpen: boolean;
@@ -15,57 +16,13 @@ interface EditProductModalProps {
   productToEdit: Product;
 }
 
-async function getCroppedFile(imageFile: File, percentCrop: Crop): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    const imageUrl = URL.createObjectURL(imageFile);
-    image.src = imageUrl;
-
-    image.onload = () => {
-      const canvas = document.createElement('canvas');
-      const cropWidth = image.naturalWidth * (percentCrop.width / 100);
-      const cropHeight = image.naturalHeight * (percentCrop.height / 100);
-
-      if (cropWidth < 1 || cropHeight < 1) {
-          URL.revokeObjectURL(imageUrl);
-          return reject(new Error('Crop dimensions are too small.'));
-      }
-      canvas.width = cropWidth;
-      canvas.height = cropHeight;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        URL.revokeObjectURL(imageUrl);
-        return reject(new Error('Could not get canvas context.'));
-      }
-
-      ctx.drawImage(
-        image,
-        image.naturalWidth * (percentCrop.x / 100),
-        image.naturalHeight * (percentCrop.y / 100),
-        canvas.width, canvas.height, 0, 0, canvas.width, canvas.height
-      );
-      URL.revokeObjectURL(imageUrl);
-
-      canvas.toBlob(blob => {
-        if (!blob) return reject(new Error('Canvas is empty'));
-        resolve(new File([blob], imageFile.name, { type: 'image/jpeg' }));
-      }, 'image/jpeg', 0.95);
-    };
-    image.onerror = (error) => {
-      URL.revokeObjectURL(imageUrl);
-      reject(error);
-    };
-  });
-}
-
 const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, onProductEdited, userId, productToEdit }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [type, setType] = useState<'buy' | 'rent'>('buy');
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState<number | ''>(1);
   const [price, setPrice] = useState('');
   const [sessionString, setSessionString] = useState('');
   
@@ -323,7 +280,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
     if (type === 'rent' && !sessionString.trim()) {
       newErrors.session = 'Rental Session is required for rentals.';
     }
-    if (isNaN(quantity) || quantity < 1) {
+    if (quantity === '' || isNaN(Number(quantity)) || Number(quantity) < 1) {
         newErrors.quantity = 'Quantity must be at least 1.';
     }
 
@@ -354,7 +311,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ isOpen, onClose, on
             description,
             category: categories.length > 0 ? categories : null,
             type,
-            quantity_left: quantity,
+            quantity_left: Number(quantity),
             price: parseFloat(price),
             image_url: finalImageUrls,
             session: type === 'rent' ? sessionString.trim() : null,

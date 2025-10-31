@@ -1,5 +1,6 @@
 import React from 'react';
 import { CroppedImage, ExistingImage } from '../../types';
+import CropIcon from '../ui/CropIcon';
 
 interface ProductFormFieldsProps {
     title: string;
@@ -19,8 +20,8 @@ interface ProductFormFieldsProps {
     setType: (value: 'buy' | 'rent') => void;
     price: string;
     setPrice: (value: string) => void;
-    quantity: number;
-    setQuantity: (value: number) => void;
+    quantity: number | '';
+    setQuantity: (value: number | '') => void;
     sessionString: string;
     setSessionString: (value: string) => void;
     fileInputRef: React.RefObject<HTMLInputElement>;
@@ -40,11 +41,6 @@ interface ProductFormFieldsProps {
     errors: Record<string, string>;
     idPrefix?: string;
 }
-
-const CropIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"></path><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"></path></svg>
-);
-
 
 const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
     title, setTitle,
@@ -121,8 +117,8 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({
                     type="number"
                     placeholder="e.g. 1"
                     value={quantity}
-                    onChange={e => setQuantity(parseInt(e.target.value, 10))}
-                    onBlur={() => { if (isNaN(quantity) || quantity < 1) setQuantity(1); }}
+                    onChange={e => setQuantity(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+                    onBlur={() => { if (quantity === '' || isNaN(Number(quantity)) || Number(quantity) < 1) setQuantity(1); }}
                     className={`w-full bg-white text-brand-dark px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-brand-accent/80 ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`}
                     min="1"
                     required

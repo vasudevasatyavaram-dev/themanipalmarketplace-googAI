@@ -501,3 +501,22 @@ To provide sellers with quick access to the customer-facing marketplace, a new i
 2.  **External Link:** Clicking this icon opens the customer marketplace website (`https://themanipalmarketplace-seller.vercel.app/`) in a new browser tab. This prevents sellers from losing their place in the dashboard.
 3.  **Consistent Styling:** The button is styled identically to the main menu button, ensuring a clean and consistent UI.
 4.  **Mobile-Friendly:** The icon is compact and does not add clutter to the mobile header, maintaining the application's mobile-first design.
+---
+**Refactor: Isolate Login Page Component**
+
+**Overview:**
+To improve project structure and make the login component more independent, the login page logic has been moved from `components/auth/Login.tsx` into a new, dedicated file at the project root: `LoginPage.tsx`. The main `App.tsx` has been updated to use this new component. This is a structural refactor with no changes to the login page's functionality or appearance.
+---
+**Audit: Final Code Quality & Consistency Check**
+
+**Overview:**
+A final audit was performed to ensure the highest code quality. This involved identifying and eliminating code duplication, cleaning up obsolete files, and fixing minor inconsistencies.
+
+**Implementation Details:**
+1.  **Deduplication:**
+    *   **Image Utility:** The `getCroppedFile` helper function, which was present in both the Add and Edit modals, has been extracted into a single, reusable function in `services/imageUtils.ts`.
+    *   **Shared Icons:** The `GoogleIcon` (used in Login and Profile) and `CropIcon` (used in product forms) were duplicated. They have been moved into their own shared component files in `components/ui/` to ensure consistency and maintainability.
+2.  **File Cleanup:** The obsolete `components/auth/Login.tsx` file, a remnant of a previous refactor, has been deleted from the project to prevent confusion.
+3.  **Type Safety:** A minor type inconsistency in the "Quantity" input field's state between the Add and Edit modals was identified and resolved, making the component's props and state management more robust.
+
+This final check hardens the application's codebase, making it cleaner, more professional, and easier to maintain in the long term.

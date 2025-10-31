@@ -5,70 +5,14 @@ import Spinner from '../ui/Spinner';
 import ImageCropModal from './ImageCropModal';
 import { type Crop } from 'react-image-crop';
 import { CroppedImage } from '../../types';
+import { getCroppedFile } from '../../services/imageUtils';
+import CropIcon from '../ui/CropIcon';
 
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onProductAdded: () => void;
   userId: string;
-}
-
-const CropIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"></path><path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"></path></svg>
-);
-
-// Helper function to generate final cropped image from original file and percentage crop data
-async function getCroppedFile(imageFile: File, percentCrop: Crop): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    const imageUrl = URL.createObjectURL(imageFile);
-    image.src = imageUrl;
-
-    image.onload = () => {
-      const canvas = document.createElement('canvas');
-      
-      const cropWidth = image.naturalWidth * (percentCrop.width / 100);
-      const cropHeight = image.naturalHeight * (percentCrop.height / 100);
-
-      if (cropWidth < 1 || cropHeight < 1) {
-          URL.revokeObjectURL(imageUrl);
-          return reject(new Error('Crop dimensions are too small.'));
-      }
-
-      canvas.width = cropWidth;
-      canvas.height = cropHeight;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        URL.revokeObjectURL(imageUrl);
-        return reject(new Error('Could not get canvas context.'));
-      }
-
-      ctx.drawImage(
-        image,
-        image.naturalWidth * (percentCrop.x / 100), // sx
-        image.naturalHeight * (percentCrop.y / 100), // sy
-        canvas.width, // sWidth
-        canvas.height, // sHeight
-        0, 0,
-        canvas.width, canvas.height
-      );
-      
-      URL.revokeObjectURL(imageUrl);
-
-      canvas.toBlob(blob => {
-        if (!blob) {
-          return reject(new Error('Canvas is empty'));
-        }
-        resolve(new File([blob], imageFile.name, { type: 'image/jpeg' }));
-      }, 'image/jpeg', 0.95);
-    };
-
-    image.onerror = (error) => {
-      URL.revokeObjectURL(imageUrl);
-      reject(error);
-    };
-  });
 }
 
 const ProgressIndicator: React.FC<{ currentStep: number }> = ({ currentStep }) => {
