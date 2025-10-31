@@ -118,24 +118,33 @@ export interface Database {
       }
       user_roles: {
         Row: {
-          user_id: string
+          id: string
           is_seller: boolean
+          is_customer: boolean
           created_at: string
+          seller_at: string | null
+          customer_at: string | null
         }
         Insert: {
-          user_id: string
+          id: string
           is_seller?: boolean
+          is_customer?: boolean
           created_at?: string
+          seller_at?: string | null
+          customer_at?: string | null
         }
         Update: {
-          user_id?: string
+          id?: string
           is_seller?: boolean
+          is_customer?: boolean
           created_at?: string
+          seller_at?: string | null
+          customer_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "user_roles_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "user_roles_id_fkey"
+            columns: ["id"]
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]

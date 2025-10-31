@@ -55,7 +55,7 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('is_seller')
-        .eq('user_id', session.user.id)
+        .eq('id', session.user.id)
         .single();
 
       // 'PGRST116' is the code for "exact one row not found", which is expected for new users.
@@ -66,7 +66,11 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
       if (!roleData || !roleData.is_seller) {
         const { error: upsertError } = await supabase
           .from('user_roles')
-          .upsert({ user_id: session.user.id, is_seller: true });
+          .upsert({ 
+            id: session.user.id, 
+            is_seller: true,
+            seller_at: new Date().toISOString()
+          });
 
         if (upsertError) throw upsertError;
 
