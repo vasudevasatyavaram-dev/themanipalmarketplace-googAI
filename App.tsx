@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './services/supabase';
 import { Session } from '@supabase/supabase-js';
-import LoginPage from './LoginPage';
+import AuthPage from './AuthPage';
 import Dashboard from './components/dashboard/Dashboard';
-import StoreIcon from './components/ui/StoreIcon';
+import AuthLayout from './components/layout/AuthLayout';
+import BrandHeader from './components/ui/BrandHeader';
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
@@ -27,21 +28,15 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-brand-light text-center">
-        <StoreIcon className="mb-4" />
-        <h1 className="text-lg font-bold text-brand-dark tracking-wider">
-            • the manipal marketplace •
-        </h1>
-        <p className="mt-2 text-md text-brand-dark/70 animate-pulse">
-            Loading dashboard...
-        </p>
-      </div>
+      <AuthLayout>
+        <BrandHeader loading={true} subtitle="Loading dashboard..." />
+      </AuthLayout>
     );
   }
 
   return (
     <div className="min-h-screen font-sans bg-brand-light">
-      {!session ? <LoginPage /> : <Dashboard key={session.user.id} session={session} />}
+      {!session ? <AuthPage /> : <Dashboard key={session.user.id} session={session} />}
     </div>
   );
 }

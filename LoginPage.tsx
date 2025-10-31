@@ -1,7 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { supabase } from './services/supabase';
 import Spinner from './components/ui/Spinner';
-import StoreIcon from './components/ui/StoreIcon';
 import GoogleIcon from './components/ui/GoogleIcon';
 
 const LoginPage: React.FC = () => {
@@ -179,53 +178,40 @@ const LoginPage: React.FC = () => {
     }
     
     return (
-        <div className="min-h-screen flex flex-col justify-center items-center bg-brand-light p-4">
-            <div className="text-center mb-6">
-                <div className="inline-block">
-                    <StoreIcon />
-                </div>
-                <h1 className="mt-4 text-2xl sm:text-[28px] font-bold text-brand-dark tracking-normal sm:tracking-wider whitespace-nowrap">
-                    <span className="text-brand-accent">•</span> the manipal marketplace <span className="text-brand-accent">•</span>
-                </h1>
-                <p className="mt-1 text-md text-brand-dark/70">
-                    Seller Dashboard - Manage your products
+        <div className="max-w-md w-full bg-brand-cream shadow-xl rounded-2xl p-6 space-y-4 border border-brand-dark/10">
+            <div className="text-left">
+                <h2 className="text-2xl font-bold text-brand-dark">
+                    Welcome
+                </h2>
+                <p className="mt-1 text-brand-dark/70">
+                    Login or create an account to get started
                 </p>
             </div>
-            <div className="max-w-md w-full bg-brand-cream shadow-xl rounded-2xl p-6 space-y-4 border border-brand-dark/10">
-                <div className="text-left">
-                    <h2 className="text-2xl font-bold text-brand-dark">
-                        Welcome
-                    </h2>
-                    <p className="mt-1 text-brand-dark/70">
-                        Login or create an account to get started
-                    </p>
-                </div>
-                
-                <div className="flex bg-brand-light p-1 rounded-lg border border-gray-300/80">
-                    <button onClick={() => { setAuthView('login'); resetForm(); }} className={`w-1/2 p-2 rounded-md font-semibold transition-colors duration-300 ${authView === 'login' ? 'bg-white shadow' : 'text-brand-dark/60'}`}>Login</button>
-                    <button onClick={() => { setAuthView('signup'); resetForm(); }} className={`w-1/2 p-2 rounded-md font-semibold transition-colors duration-300 ${authView === 'signup' ? 'bg-white shadow' : 'text-brand-dark/60'}`}>Sign Up</button>
-                </div>
+            
+            <div className="flex bg-brand-light p-1 rounded-lg border border-gray-300/80">
+                <button onClick={() => { setAuthView('login'); resetForm(); }} className={`w-1/2 p-2 rounded-md font-semibold transition-colors duration-300 ${authView === 'login' ? 'bg-white shadow' : 'text-brand-dark/60'}`}>Login</button>
+                <button onClick={() => { setAuthView('signup'); resetForm(); }} className={`w-1/2 p-2 rounded-md font-semibold transition-colors duration-300 ${authView === 'signup' ? 'bg-white shadow' : 'text-brand-dark/60'}`}>Sign Up</button>
+            </div>
 
-                <div>
-                    {renderFormContent()}
-                </div>
-                
-                {authView === 'login' && pageView === 'form' && (
-                     <div className="text-center">
-                        <button onClick={() => setLoginMethod(prev => prev === 'email' ? 'phone' : 'email')} className="font-medium text-sm text-brand-accent hover:text-brand-accent/80">
-                           {loginMethod === 'email' ? 'Use phone instead' : 'Use email instead'}
-                        </button>
-                    </div>
-                )}
-
-                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
-                <div className="mt-4">
-                    <button onClick={signInWithGoogle} disabled={loading} className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                        <GoogleIcon />
-                        Sign in with Google instead
+            <div>
+                {renderFormContent()}
+            </div>
+            
+            {authView === 'login' && pageView === 'form' && (
+                 <div className="text-center">
+                    <button onClick={() => setLoginMethod(prev => prev === 'email' ? 'phone' : 'email')} className="font-medium text-sm text-brand-accent hover:text-brand-accent/80">
+                       {loginMethod === 'email' ? 'Use phone instead' : 'Use email instead'}
                     </button>
                 </div>
+            )}
+
+            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+            <div className="mt-4">
+                <button onClick={signInWithGoogle} disabled={loading} className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    <GoogleIcon />
+                    Sign in with Google instead
+                </button>
             </div>
         </div>
     );
