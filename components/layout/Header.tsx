@@ -45,10 +45,6 @@ const Header: React.FC<HeaderProps> = ({ user, onOpenProfile, onNavigate, onOpen
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
-  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -123,7 +119,14 @@ const Header: React.FC<HeaderProps> = ({ user, onOpenProfile, onNavigate, onOpen
                           </button>
                       </nav>
                       <div className="py-1 border-t border-brand-dark/10">
-                          <button onClick={createMenuAction(handleLogout)} className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-brand-accent hover:bg-brand-dark/5 transition-colors">
+                          <button onClick={async () => {
+                              setIsMenuOpen(false); // Close menu first for better responsiveness
+                              const { error } = await supabase.auth.signOut();
+                              if (error) {
+                                  console.error('Error logging out:', error.message);
+                                  alert('Failed to log out. Please try again.');
+                              }
+                          }} className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-brand-accent hover:bg-brand-dark/5 transition-colors">
                               <LogOutIcon />
                               <span>Logout</span>
                           </button>
