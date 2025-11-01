@@ -100,14 +100,14 @@ const LoginPage: React.FC = () => {
     const renderFormContent = () => {
         if (pageView === 'otp') {
             return (
-                <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <form onSubmit={handleVerifyOtp} className="space-y-3">
                     <div>
                         <label htmlFor="otp" className="block text-sm font-medium text-brand-dark/80">Enter verification code</label>
                         <input id="otp" type="text" placeholder="123456" value={otp} onChange={(e) => setOtp(e.target.value)} required
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
+                            className="mt-1 block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
                     </div>
                     <div>
-                        <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
+                        <button type="submit" disabled={loading} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
                             {loading ? <Spinner /> : 'Verify & Continue'}
                         </button>
                     </div>
@@ -121,24 +121,24 @@ const LoginPage: React.FC = () => {
         }
 
         return (
-            <form onSubmit={handleAuthAction} className="space-y-4">
+            <form onSubmit={handleAuthAction} className="space-y-3">
                 {authView === 'signup' && (
                     <div>
                         <label htmlFor="fullName" className="block text-sm font-medium text-brand-dark/80">Full Name</label>
                         <input id="fullName" type="text" placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required
-                                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
+                                className="mt-1 block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
                     </div>
                 )}
                 
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-brand-dark/80">Email address</label>
                     <input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required
-                            className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
+                            className="mt-1 block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/80 focus:border-brand-accent/80" />
                 </div>
 
                 <div>
-                    <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
-                        {loading ? <Spinner /> : 'Send Link'}
+                    <button type="submit" disabled={loading} className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-brand-accent hover:opacity-90 disabled:opacity-50">
+                        {loading ? <Spinner /> : 'Send Magic Link'}
                     </button>
                 </div>
             </form>
@@ -146,12 +146,12 @@ const LoginPage: React.FC = () => {
     }
     
     return (
-        <div className="max-w-md w-full bg-brand-cream shadow-xl rounded-2xl p-6 space-y-4 border border-brand-dark/10">
+        <div className="max-w-md w-full bg-brand-cream shadow-xl rounded-2xl p-5 space-y-3 border border-brand-dark/10">
             <div className="text-left">
                 <h2 className="text-2xl font-bold text-brand-dark">
                     Welcome
                 </h2>
-                <p className="mt-1 text-brand-dark/70">
+                <p className="text-brand-dark/70">
                     Login or create an account to get started
                 </p>
             </div>
@@ -167,14 +167,14 @@ const LoginPage: React.FC = () => {
             
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-            <div className="relative flex py-2 items-center">
+            <div className="relative flex py-1 items-center">
                 <div className="flex-grow border-t border-gray-300"></div>
                 <span className="flex-shrink mx-4 text-xs text-gray-400 font-semibold">OR</span>
                 <div className="flex-grow border-t border-gray-300"></div>
             </div>
 
-            <div className="mt-2">
-                <button onClick={signInWithGoogle} disabled={loading} className="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <div className="">
+                <button onClick={signInWithGoogle} disabled={loading} className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
                     <GoogleIcon />
                     Sign in with Google
                 </button>

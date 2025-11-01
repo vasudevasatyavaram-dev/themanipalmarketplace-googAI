@@ -126,9 +126,9 @@ const Dashboard: React.FC<DashboardProps> = ({ session }) => {
     setIsAddModalOpen(false);
 
     if (isFirstProduct) {
-        setNotification("Congratulations on listing your first product! You'll be notified on your verified phone number once it's approved.");
+        setNotification("Congratulations on listing your first product! You'll be notified on your verified email once it's approved.");
     } else {
-        setNotification("Product listed successfully! You'll be notified on your verified phone number once it's approved.");
+        setNotification("Product listed successfully! You'll be notified on your verified email once it's approved.");
     }
   };
   

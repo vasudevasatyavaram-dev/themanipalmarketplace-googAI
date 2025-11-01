@@ -56,3 +56,50 @@ To make the authentication module truly independent and reusable across differen
 2.  **New `login.tsx`:** A new TypeScript entry point was created for `login.html`. Its sole responsibility is to render the `<AuthPage />` component, which is the root of the self-contained authentication module.
 
 This change completes the architectural separation of the login flow, making it a fully standalone module that can be easily deployed or reused elsewhere without modification.
+---
+**Auth Flow Simplification: Email & Google Only**
+
+**Overview:**
+To streamline the user experience and simplify the authentication process, all phone number-based login and sign-up options have been removed. The application now exclusively supports authentication via email (using a magic link) and Google OAuth.
+
+**Implementation Details:**
+1.  **Login/Sign-up Forms (`LoginPage.tsx`):**
+    *   Removed all UI elements and state related to phone numbers.
+    *   The login form now defaults to email.
+    *   The sign-up form now requires a "Full Name" and a compulsory "Email address."
+    *   The call-to-action button has been changed from "Send OTP" to the more accurate "Send Magic Link."
+2.  **Profile Display (`Header.tsx`):** The user display in the header menu has been updated to only show the user's email, removing the fallback to the phone number.
+3.  **Application Entry Point (`App.tsx`):** The main application component has been cleaned up to correctly use the self-contained authentication module (`AuthPage.tsx`), ensuring a consistent and isolated login experience.
+
+This change provides a more focused and modern authentication flow, reducing complexity for both the user and the application's codebase.
+---
+**UI/UX Refinement: Compact Login Page**
+
+**Overview:**
+To ensure the entire authentication experience fits comfortably on a single screen without vertical scrolling, a series of targeted UI refinements have been implemented. These changes reduce the overall vertical height while preserving all original content and functionality.
+
+**Implementation Details:**
+1.  **Header and Logo (`BrandHeader.tsx`, `StoreIcon.tsx`):**
+    *   The main store icon has been reduced in size from `80px` to `64px`.
+    *   The primary title font size has been decreased.
+    *   Vertical margins above and below the header have been tightened.
+2.  **Login Card (`LoginPage.tsx`):**
+    *   The internal padding of the card has been reduced.
+    *   The vertical spacing between sections (title, toggle, form, "OR" divider, Google button) has been decreased.
+    *   The height of form inputs and buttons has been slightly reduced by adjusting their vertical padding.
+
+These adjustments work together to create a more compact, screen-friendly layout that improves the user experience, particularly on smaller displays, by eliminating the need for scrolling.
+---
+**UI Tweak: Increase Brand Title Size**
+
+**Overview:**
+The main brand title on the login page has been enlarged to increase its visual prominence, while ensuring it remains on a single line on mobile devices.
+
+**Implementation Details:**
+1.  **Increased Font Size (`BrandHeader.tsx`):**
+    *   The font size for the title has been increased.
+    *   Mobile size changed from `text-xl` to `text-2xl`.
+    *   Desktop size changed from `sm:text-2xl` to `sm:text-3xl`.
+    *   The `whitespace-nowrap` property was retained to guarantee the title never wraps, maintaining the single-line layout on all screen sizes.
+
+This change enhances branding and visual hierarchy on the authentication page.
