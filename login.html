@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%233D081B' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z' /%3E%3Cline x1='3' y1='6' x2='21' y2='6' /%3E%3Cpath d='M16 10a4 4 0 0 1-8 0' /%3E%3C/svg%3E" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | The Manipal Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://aistudiocdn.com/react-image-crop@^11.0.8/dist/ReactCrop.css" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+            },
+            colors: {
+              'brand-dark': '#3D081B',
+              'brand-light': '#F2EFDD',
+              'brand-accent': '#910F3F',
+              'brand-cream': '#FAF9E1',
+            },
+            keyframes: {
+              'fade-in': {
+                '0%': { opacity: '0', transform: 'translateY(-10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+            },
+            animation: {
+              'fade-in': 'fade-in 0.5s ease-out forwards',
+              'fade-in-fast': 'fade-in 0.2s ease-out forwards',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        background-color: #F2EFDD;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%233D081B' fill-opacity='0.02' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.76.1",
+    "react-image-crop": "https://aistudiocdn.com/react-image-crop@^11.0.8",
+    "react-image-crop/": "https://aistudiocdn.com/react-image-crop@^11.0.8/",
+    "chart.js": "https://aistudiocdn.com/chart.js@^4.4.3",
+    "react-chartjs-2": "https://aistudiocdn.com/react-chartjs-2@^5.2.0",
+    "uuid": "https://aistudiocdn.com/uuid@^13.0.0"
+  }
+}
+</script>
+</head>
+  <body class="text-brand-dark">
+    <div id="root"></div>
+    <script type="module" src="/login.tsx"></script>
+  </body>
+</html>

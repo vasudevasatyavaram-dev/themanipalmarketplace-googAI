@@ -98,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({ user, onOpenProfile, onNavigate, onOpen
                   <div className="absolute right-0 mt-2 w-64 bg-brand-cream border border-brand-dark/10 rounded-lg shadow-2xl py-2 z-20 animate-fade-in-fast">
                       <div className="px-4 py-3 border-b border-brand-dark/10">
                           <p className="text-sm font-semibold text-brand-dark">Signed in as</p>
-                          <p className="text-sm text-brand-dark/80 truncate">{user.email || user.phone}</p>
+                          <p className="text-sm text-brand-dark/80 truncate">{user.email}</p>
                       </div>
                       <nav className="py-1">
                           <button onClick={createMenuAction(() => onNavigate('dashboard'))} className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-brand-dark hover:bg-brand-dark/5 transition-colors">

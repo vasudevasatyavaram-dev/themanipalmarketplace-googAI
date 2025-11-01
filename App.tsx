@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './services/supabase';
 import { Session } from '@supabase/supabase-js';
-import AuthPage from './AuthPage';
 import Dashboard from './components/dashboard/Dashboard';
+import AuthPage from './AuthPage';
 import AuthLayout from './components/layout/AuthLayout';
 import BrandHeader from './components/ui/BrandHeader';
 
@@ -35,9 +35,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen font-sans bg-brand-light">
-      {!session ? <AuthPage /> : <Dashboard key={session.user.id} session={session} />}
-    </div>
+    !session ? <AuthPage /> : <Dashboard key={session.user.id} session={session} />
   );
 }
 
